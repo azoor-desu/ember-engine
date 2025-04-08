@@ -79,7 +79,8 @@ add_subdirectory(src)
 #         main.cpp
 # )
 
-# Extern/package libs. LINUX ONLY.
+# Extern/package libs.
+if (UNIX)
 # Uses libraries/packages from built-in package manager.
 # Finds the pkg-config executable, adds the pkg_check_modules() function, among others.
 find_package(PkgConfig REQUIRED)
@@ -90,6 +91,7 @@ pkg_check_modules(vulkan REQUIRED IMPORTED_TARGET vulkan)
 #    PRIVATE 
 #        ${OPENGL_INCLUDE_DIRS}
 # )
+endif()
 # ======================== END CREATE LIBS ========================
 
 # ======================== START LINKING ========================
@@ -97,13 +99,14 @@ pkg_check_modules(vulkan REQUIRED IMPORTED_TARGET vulkan)
 # PRIVATE - [ LibA [LibB]] >> LibA links to PRIVATE LibB. Other linking Libs cannot use LibB
 # PUBLIC - [ LibA ][ LibB ] >> LibA links to PUBLIC LibB. Other linking Libs can use LibB
 # INTERFACE - [ LibA ][ LibB (Partially) ] >> LibA links to LibB, but does not require B internally. Used for header-only library.
-
+if (UNIX)
 target_link_libraries(
     MainExe
     PUBLIC 
         PkgConfig::vulkan 
         PkgConfig::glfw3
 )
+endif()
 
 # Add other links here...
 #target_link_libraries(
@@ -120,11 +123,13 @@ target_link_libraries(
 #                RESULT_VARIABLE GIT_SUBMOD_RESULT)
 
 # creates symlink of compile_commands.json in root.
+if (UNIX)
 file(CREATE_LINK
   "${CMAKE_BINARY_DIR}/compile_commands.json"
   "${CMAKE_SOURCE_DIR}/compile_commands.json"
   SYMBOLIC
 )
+endif()
 
 # copies the exec from build folder to root
 #add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
