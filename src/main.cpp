@@ -6,8 +6,8 @@ int main()
 {
     std::print("hello wurl\n");
 
-    embVec2 hehe1 = embVec2();
-    embVec2 hehe2 = embVec2();
+    ember::embVec2 hehe1 = ember::embVec2();
+    ember::embVec2 hehe2 = ember::embVec2();
     hehe1.m_Data[0] = 1;
     hehe1.m_Data[1] = 2;
     hehe2.m_Data[0] = 3;

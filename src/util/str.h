@@ -1,7 +1,16 @@
 #pragma once
+
+#include "defines.h"
 #include <string>
 #include <string_view>
 #include <vector>
+
+EMB_NAMESPACE_START
+
+// strings and stuff
+using embStr = std::string;
+using embWstr = std::wstring;
+using embStrview = std::string_view;
 
 namespace TE
 {
@@ -154,3 +163,6 @@ std::string Str_Concat(const T&... args)
     return ret;
 }
 } // namespace TE
+
+
+EMB_NAMESPACE_END

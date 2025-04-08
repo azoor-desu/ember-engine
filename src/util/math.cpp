@@ -1,14 +1,3 @@
-/// \file 
-/// <pre>
-/// <para>	<b>File:</b>	Math.cpp</para>
-/// <para>	<b>Authors:</b>	Loo Jun Yi (100%)</para>
-/// <para>	<b>Emails:</b>	l.junyi@digipen.edu</para>
-/// <para>	<b>Date:</b>	27/09/2022</para>
-/// </pre>
-/// <summary>
-/// Contains functions for advanced math operations
-/// \n All content (c) 2022 DigiPen Institute of Technology Singapore. All rights reserved.
-/// </summary>
 #include <cmath>
 #include <limits>
 #include <type_traits>

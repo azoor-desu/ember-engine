@@ -1,10 +1,13 @@
 #pragma once
-#include "../defines.h"
+
+#include "types.h"
+
+EMB_NAMESPACE_START
 
 // usual containers
 
 // vec2/3/4 etc
-#include <vector>
+
 template<embU32 N, typename T = embF32>
 class embVec {
   public:
@@ -71,3 +74,8 @@ using embVec3U = embVec<3, embU32>;
 using embVec4U = embVec<4, embU32>;
 
 // array containers
+
+EMB_NAMESPACE_END
+
+// TODO: Implement sth like glm, don't do vec.cross(). do cross(vec), reduces template bloat this way.
+// template<> cross won't need to be instantiated for all vec types.
