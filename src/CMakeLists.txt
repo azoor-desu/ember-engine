@@ -3,7 +3,6 @@ target_sources(
     PRIVATE 
         main.cpp
         pch.cpp
-        defines.h
 )
 
 add_subdirectory(util)
