@@ -522,4 +522,5 @@ imgui.ini
 #!ProjectSolution/EditorTemplate/Proj_DummyCompiler/DummyCompiler.vcxproj.user
 
 # Blacklist
-#config.yaml
+EmberEngine
+EmberEngine.exe

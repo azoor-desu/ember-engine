@@ -1,2 +1,4 @@
 CompileFlags:
-  Add: [-std=c++23]
+  Add:
+    - -std=c++23
+  CompilationDatabase: ${workspaceFolder}/compile_commands.json

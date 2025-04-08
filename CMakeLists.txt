@@ -50,22 +50,22 @@ target_precompile_headers(MainExe PRIVATE src/pch.h)
 #         main.cpp
 # )
 
+# add all direct subdirs here
+add_subdirectory(src)
+
 # Adding include dirs (if needed):
 # PUBLIC: Any other targets that link to this target needs to have this include dir too
 # PRIVATE: Any other targets that link to this target will ignore this dir
 # INTERFACE: Don't apply to this target, apply for others.
 target_include_directories(
-    MainExe 
-    PUBLIC 
+    MainExe
+    PUBLIC
         src
 )
-
-# add all direct subdirs here
-add_subdirectory(src)
 #...
 # ======================== END EXE SRC FILE INCLUSION ========================
 
-
+#message(STATUS "ehe")
 
 # ======================== START CREATE LIBS ========================
 # STATIC - LIB. Requires header files to use.
