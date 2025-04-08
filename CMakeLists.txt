@@ -28,6 +28,9 @@ set(WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
 #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/build/debug")
 #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
+# disable exceptions. Yeet.
+add_compile_options(-fno-exceptions)
+
 # Create EXE, set some properties.
 add_executable(MainExe)
 set_target_properties(
