@@ -11,4 +11,6 @@ target_sources(
     UtilsLib
     PRIVATE 
         vec_base.cpp
+        vec_utils.cpp
+        vec_funcs.cpp
 )

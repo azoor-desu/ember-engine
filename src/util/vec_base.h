@@ -31,7 +31,6 @@ class embVec2 {
 
   public:
     // Constructors & frens
-    constexpr embVec2<T>() noexcept = default;
     constexpr embVec2<T>(const embVec2<T>& rhs) noexcept : x{rhs.x}, y{rhs.y} {};
     constexpr embVec2<T>(const embVec2<T>&& rhs) noexcept
         : x{std::move(rhs.x)}, y{std::move(rhs.y)} {};
@@ -47,39 +46,128 @@ class embVec2 {
         y = std::move(rhs.y);
         return *this;
     }
-    constexpr embVec2<T>(value_type x_, value_type y_) noexcept : x{x_}, y{y_} {};
+    constexpr embVec2<T>(value_type x_ = 0, value_type y_ = 0) noexcept : x{x_}, y{y_} {};
 
-    constexpr class_type operator-() const noexcept { return class_type(-this->x, -this->y); }
+    constexpr class_type& Set(value_type x_, value_type y_)
+    {
+        x = x_;
+        y = y_;
+        return *this;
+    }
+
     constexpr bool operator==(const class_type& rhs) const noexcept
     {
         return x == rhs.x && y == rhs.y;
     };
 
+    reference operator[](size_type i) { return *((value_type*)this + i); }
+    const_reference operator[](size_type i) const { return *((value_type*)this + i); }
+
+    constexpr class_type operator-() const noexcept
+    {
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = -(*this)[i];
+        }
+        return ret;
+    }
+
     [[nodiscard]]
     class_type operator+(const class_type& rhs) const noexcept
     {
-        return class_type(x + rhs.x, y + rhs.y);
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] + rhs[i];
+        }
+        return ret;
+    }
+
+    [[nodiscard]]
+    class_type operator+(value_type rhs) const noexcept
+    {
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] + rhs;
+        }
+        return ret;
     }
 
     [[nodiscard]]
     class_type operator-(const class_type& rhs) const noexcept
     {
-        return class_type(x - rhs.x, y - rhs.y);
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] - rhs[i];
+        }
+        return ret;
+    }
+
+    [[nodiscard]]
+    class_type operator-(value_type rhs) const noexcept
+    {
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] - rhs;
+        }
+        return ret;
     }
 
     [[nodiscard]]
     class_type operator*(const class_type& rhs) const noexcept
     {
-        return class_type(x * rhs.x, y * rhs.y);
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] * rhs[i];
+        }
+        return ret;
+    }
+
+    [[nodiscard]]
+    class_type operator*(value_type rhs) const noexcept
+    {
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] * rhs;
+        }
+        return ret;
     }
 
     [[nodiscard]]
     class_type operator/(const class_type& rhs) const noexcept
     {
-        return class_type(x / rhs.x, y / rhs.y);
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] / rhs[i];
+        }
+        return ret;
+    }
+
+    [[nodiscard]]
+    class_type operator/(value_type rhs) const noexcept
+    {
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] / rhs;
+        }
+        return ret;
     }
 
     class_type& operator+=(const class_type& rhs) noexcept
+    {
+        *this = *this + rhs;
+        return *this;
+    }
+
+    class_type& operator+=(value_type rhs) noexcept
     {
         *this = *this + rhs;
         return *this;
@@ -91,7 +179,19 @@ class embVec2 {
         return *this;
     }
 
+    class_type& operator-=(value_type rhs) noexcept
+    {
+        *this = *this - rhs;
+        return *this;
+    }
+
     class_type& operator*=(const class_type& rhs) noexcept
+    {
+        *this = *this * rhs;
+        return *this;
+    }
+
+    class_type& operator*=(value_type rhs) noexcept
     {
         *this = *this * rhs;
         return *this;
@@ -103,8 +203,11 @@ class embVec2 {
         return *this;
     }
 
-    reference operator[](size_type i) { return *((value_type*)this + i); }
-    const_reference operator[](size_type i) const { return *((value_type*)this + i); }
+    class_type& operator/=(value_type rhs) noexcept
+    {
+        *this = *this / rhs;
+        return *this;
+    }
 };
 
 template<typename T = embF32>
@@ -118,7 +221,7 @@ class embVec3 {
     using pointer = value_type*;
     using const_pointer = const value_type*;
 
-    static constexpr embU32 s_VecSize = 2;
+    static constexpr embU32 s_VecSize = 3;
     using size_type = embU32;
 
   public:
@@ -131,7 +234,6 @@ class embVec3 {
 
   public:
     // Constructors & frens
-    constexpr embVec3<T>() noexcept = default;
     constexpr embVec3<T>(const embVec3<T>& rhs) noexcept : x{rhs.x}, y{rhs.y}, z{rhs.z} {};
     constexpr embVec3<T>(const embVec3<T>&& rhs) noexcept
         : x{std::move(rhs.x)}, y{std::move(rhs.y)}, z{std::move(rhs.z)} {};
@@ -149,43 +251,130 @@ class embVec3 {
         z = std::move(rhs.z);
         return *this;
     }
-    constexpr embVec3<T>(value_type x_, value_type y_, value_type z_) noexcept
+    constexpr embVec3<T>(value_type x_ = 0, value_type y_ = 0, value_type z_ = 0) noexcept
         : x{x_}, y{y_}, z{z_} {};
 
-    constexpr class_type operator-() const noexcept
+    constexpr class_type& Set(value_type x_, value_type y_, value_type z_)
     {
-        return class_type(-this->x, -this->y, -this->z, );
+        x = x_;
+        y = y_;
+        z = z_;
+        return *this;
     }
+
     constexpr bool operator==(const class_type& rhs) const noexcept
     {
         return x == rhs.x && y == rhs.y && z == rhs.z;
     };
 
+    reference operator[](size_type i) { return *((value_type*)this + i); }
+    const_reference operator[](size_type i) const { return *((value_type*)this + i); }
+
+    constexpr class_type operator-() const noexcept
+    {
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = -(*this)[i];
+        }
+        return ret;
+    }
+
     [[nodiscard]]
     class_type operator+(const class_type& rhs) const noexcept
     {
-        return class_type(x + rhs.x, y + rhs.y, z + rhs.z, );
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] + rhs[i];
+        }
+        return ret;
+    }
+
+    [[nodiscard]]
+    class_type operator+(value_type rhs) const noexcept
+    {
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] + rhs;
+        }
+        return ret;
     }
 
     [[nodiscard]]
     class_type operator-(const class_type& rhs) const noexcept
     {
-        return class_type(x - rhs.x, y - rhs.y, z - rhs.z, );
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] - rhs[i];
+        }
+        return ret;
+    }
+
+    [[nodiscard]]
+    class_type operator-(value_type rhs) const noexcept
+    {
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] - rhs;
+        }
+        return ret;
     }
 
     [[nodiscard]]
     class_type operator*(const class_type& rhs) const noexcept
     {
-        return class_type(x * rhs.x, y * rhs.y, z * rhs.z, );
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] * rhs[i];
+        }
+        return ret;
+    }
+
+    [[nodiscard]]
+    class_type operator*(value_type rhs) const noexcept
+    {
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] * rhs;
+        }
+        return ret;
     }
 
     [[nodiscard]]
     class_type operator/(const class_type& rhs) const noexcept
     {
-        return class_type(x / rhs.x, y / rhs.y, z / rhs.z, );
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] / rhs[i];
+        }
+        return ret;
+    }
+
+    [[nodiscard]]
+    class_type operator/(value_type rhs) const noexcept
+    {
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] / rhs;
+        }
+        return ret;
     }
 
     class_type& operator+=(const class_type& rhs) noexcept
+    {
+        *this = *this + rhs;
+        return *this;
+    }
+
+    class_type& operator+=(value_type rhs) noexcept
     {
         *this = *this + rhs;
         return *this;
@@ -197,7 +386,19 @@ class embVec3 {
         return *this;
     }
 
+    class_type& operator-=(value_type rhs) noexcept
+    {
+        *this = *this - rhs;
+        return *this;
+    }
+
     class_type& operator*=(const class_type& rhs) noexcept
+    {
+        *this = *this * rhs;
+        return *this;
+    }
+
+    class_type& operator*=(value_type rhs) noexcept
     {
         *this = *this * rhs;
         return *this;
@@ -209,8 +410,11 @@ class embVec3 {
         return *this;
     }
 
-    reference operator[](size_type i) { return *((value_type*)this + i); }
-    const_reference operator[](size_type i) const { return *((value_type*)this + i); }
+    class_type& operator/=(value_type rhs) noexcept
+    {
+        *this = *this / rhs;
+        return *this;
+    }
 };
 
 template<typename T = embF32>
@@ -224,7 +428,7 @@ class embVec4 {
     using pointer = value_type*;
     using const_pointer = const value_type*;
 
-    static constexpr embU32 s_VecSize = 2;
+    static constexpr embU32 s_VecSize = 4;
     using size_type = embU32;
 
   public:
@@ -239,7 +443,6 @@ class embVec4 {
 
   public:
     // Constructors & frens
-    constexpr embVec4<T>() noexcept = default;
     constexpr embVec4<T>(const embVec4<T>& rhs) noexcept
         : x{rhs.x}, y{rhs.y}, z{rhs.z}, w{rhs.w} {};
     constexpr embVec4<T>(const embVec4<T>&& rhs) noexcept
@@ -260,43 +463,132 @@ class embVec4 {
         w = std::move(rhs.w);
         return *this;
     }
-    constexpr embVec4<T>(value_type x_, value_type y_, value_type z_, value_type w_) noexcept
+    constexpr embVec4<T>(value_type x_ = 0, value_type y_ = 0, value_type z_ = 0,
+                         value_type w_ = 0) noexcept
         : x{x_}, y{y_}, z{z_}, w{w_} {};
 
-    constexpr class_type operator-() const noexcept
+    constexpr class_type& Set(value_type x_, value_type y_, value_type z_, value_type w_)
     {
-        return class_type(-this->x, -this->y, -this->z, -this->w);
+        x = x_;
+        y = y_;
+        z = z_;
+        w = w_;
+        return *this;
     }
+
     constexpr bool operator==(const class_type& rhs) const noexcept
     {
         return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
     };
 
+    reference operator[](size_type i) { return *((value_type*)this + i); }
+    const_reference operator[](size_type i) const { return *((value_type*)this + i); }
+
+    constexpr class_type operator-() const noexcept
+    {
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = -(*this)[i];
+        }
+        return ret;
+    }
+
     [[nodiscard]]
     class_type operator+(const class_type& rhs) const noexcept
     {
-        return class_type(x + rhs.x, y + rhs.y, z + rhs.z, w + rhs.w);
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] + rhs[i];
+        }
+        return ret;
+    }
+
+    [[nodiscard]]
+    class_type operator+(value_type rhs) const noexcept
+    {
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] + rhs;
+        }
+        return ret;
     }
 
     [[nodiscard]]
     class_type operator-(const class_type& rhs) const noexcept
     {
-        return class_type(x - rhs.x, y - rhs.y, z - rhs.z, w - rhs.w);
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] - rhs[i];
+        }
+        return ret;
+    }
+
+    [[nodiscard]]
+    class_type operator-(value_type rhs) const noexcept
+    {
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] - rhs;
+        }
+        return ret;
     }
 
     [[nodiscard]]
     class_type operator*(const class_type& rhs) const noexcept
     {
-        return class_type(x * rhs.x, y * rhs.y, z * rhs.z, w * rhs.w);
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] * rhs[i];
+        }
+        return ret;
+    }
+
+    [[nodiscard]]
+    class_type operator*(value_type rhs) const noexcept
+    {
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] * rhs;
+        }
+        return ret;
     }
 
     [[nodiscard]]
     class_type operator/(const class_type& rhs) const noexcept
     {
-        return class_type(x / rhs.x, y / rhs.y, z / rhs.z, w / rhs.w);
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] / rhs[i];
+        }
+        return ret;
+    }
+
+    [[nodiscard]]
+    class_type operator/(value_type rhs) const noexcept
+    {
+        class_type ret;
+        for (size_type i = 0; i < s_VecSize; i++)
+        {
+            ret[i] = (*this)[i] / rhs;
+        }
+        return ret;
     }
 
     class_type& operator+=(const class_type& rhs) noexcept
+    {
+        *this = *this + rhs;
+        return *this;
+    }
+
+    class_type& operator+=(value_type rhs) noexcept
     {
         *this = *this + rhs;
         return *this;
@@ -308,7 +600,19 @@ class embVec4 {
         return *this;
     }
 
+    class_type& operator-=(value_type rhs) noexcept
+    {
+        *this = *this - rhs;
+        return *this;
+    }
+
     class_type& operator*=(const class_type& rhs) noexcept
+    {
+        *this = *this * rhs;
+        return *this;
+    }
+
+    class_type& operator*=(value_type rhs) noexcept
     {
         *this = *this * rhs;
         return *this;
@@ -320,8 +624,11 @@ class embVec4 {
         return *this;
     }
 
-    reference operator[](size_type i) { return *((value_type*)this + i); }
-    const_reference operator[](size_type i) const { return *((value_type*)this + i); }
+    class_type& operator/=(value_type rhs) noexcept
+    {
+        *this = *this / rhs;
+        return *this;
+    }
 };
 
 using embVec2S = embVec2<embS32>;
@@ -331,17 +638,25 @@ using embVec3U = embVec3<embU32>;
 using embVec4S = embVec4<embS32>;
 using embVec4U = embVec4<embU32>;
 
-// For pre-compilation of common classes in lib
-extern template class embVec2<embF32>;
-extern template class embVec2<embS32>;
-extern template class embVec2<embU32>;
+// For pre-compilation of common classes
 
-extern template class embVec3<embF32>;
-extern template class embVec3<embS32>;
-extern template class embVec3<embU32>;
+#define EXTERN_MACRO(valueType) \
+    extern template class embVec2<valueType>; \
+    extern template class embVec3<valueType>; \
+    extern template class embVec4<valueType>;
 
-extern template class embVec4<embF32>;
-extern template class embVec4<embS32>;
-extern template class embVec4<embU32>;
+EXTERN_MACRO(embF32)
+// EXTERN_MACRO(embF64)
+EXTERN_MACRO(embU8)
+// EXTERN_MACRO(embS32)
+// EXTERN_MACRO(embU32)
+
+#undef EXTERN_MACRO
 
 EMB_NAMESPACE_END
+
+
+// TODO
+// Global overload for +-*/ for left/right alternating sides. Move out of member operator.
+// Some ops dont make sense like vec / vec wtf lol. Or num / vec. special case is vec * vec, component multiply.
+// Vector specific ops, like cross/angle.
