@@ -1,21 +1,27 @@
 #pragma once
 
 #include "defines.h"
+#include <cstddef>
 #include <cstdint> // for int types
 #include <limits> // for numeric_limits
 
 EMB_NAMESPACE_START
 
+
 using embBool = bool;
+// UTF-8 char
+using embChar = char;
+// UTF-16
+using embLChar = char16_t;
+// UTF-16/32, system preferred. 16 usually, 32 on Linux.
+using embWChar = wchar_t;
 
 using embBitmask8 = uint8_t; // 8-bit bitmask for bit operations
 using embBitmask16 = uint16_t; // 16-bit bitmask for bit operations
 using embBitmask32 = uint32_t; // 32-bit bitmask for bit operations
 using embBitmask64 = uint64_t; // 64-bit bitmask for bit operations
 
-using embChar = char; // UTF-8 char
-//using embLChar = lchar; // UTF-16
-using embWChar = wchar_t; // UTF-16
+using embMemSize = std::size_t;
 
 using embS8 = int8_t; // 8-bits, 1 byte, signed
 using embU8 = uint8_t; // 8-bits, 1 byte, unsigned
@@ -45,9 +51,18 @@ constexpr embS64 embS64_MAX = std::numeric_limits<embS64>::max();
 constexpr embS64 embS64_MIN = std::numeric_limits<embS64>::min();
 constexpr embU64 embU64_MAX = std::numeric_limits<embU64>::max();
 constexpr embU64 embU64_MIN = 0;
+
 constexpr float embF32_MAX = std::numeric_limits<float>::max();
 constexpr double embF64_MIN = std::numeric_limits<double>::min();
 constexpr float embF32_INF = std::numeric_limits<float>::infinity();
 constexpr double embF64_INF = std::numeric_limits<double>::infinity();
+// the difference between 1 and the smallest floating point number greater than 1
+constexpr double embF32_EPSILON = 1.192092896e-07F;
+// the difference between 1 and the smallest floating point number greater than 1
+constexpr double embF64_EPSILON = 2.2204460492503131e-016;
+// smallest possible positive value greater than 0
+constexpr double embF32_SMALLEST = 1.175494351E-38F;
+// smallest possible positive value greater than 0
+constexpr double embF64_SMALLEST = 2.2250738585072014E-308;
 
 EMB_NAMESPACE_END

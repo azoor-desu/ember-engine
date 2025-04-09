@@ -16,7 +16,13 @@
 #define UNUSED(P) (P)
 #endif
 
+
+
 #define EMB_NAMESPACE_START \
     namespace ember \
     {
 #define EMB_NAMESPACE_END } // namespace ember
+
+// Toggles
+
+#define EMB_DEBUG_LEVEL 5

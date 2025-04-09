@@ -70,16 +70,17 @@ target_include_directories(
 
 #message(STATUS "ehe")
 
-# ======================== START CREATE LIBS ========================
+# ======================== START CREATE/ADD LIBS ========================
 # STATIC - LIB. Requires header files to use.
 # SHARED - DLLs with symbols.
 # MODULE - DLLs without symbols. Cannot be used to build.
 
 # Library number 1
 #add_library(Lib1 STATIC)
-# target_sources(Lib1
-#     PRIVATE 
-#         main.cpp
+# target_sources(
+#    Lib1
+#    PRIVATE 
+#        main.cpp
 # )
 
 # Extern/package libs.
@@ -95,7 +96,7 @@ pkg_check_modules(vulkan REQUIRED IMPORTED_TARGET vulkan)
 #        ${OPENGL_INCLUDE_DIRS}
 # )
 endif()
-# ======================== END CREATE LIBS ========================
+# ======================== END CREATE/ADD LIBS ========================
 
 # ======================== START LINKING ========================
 # Allows setting library dependencies.
@@ -112,11 +113,10 @@ target_link_libraries(
 endif()
 
 # Add other links here...
-#target_link_libraries(
-#MainExe
-#    PUBLIC Lib1
-#    PRIVATE Lib2
-#)
+target_link_libraries(
+MainExe
+   PUBLIC UtilsLib
+)
 
 # ======================== END LINKING ========================
 
