@@ -1,16 +1,11 @@
-target_sources(
-    MainExe
-    PRIVATE 
+# target_sources(
+#     MainExe
+#     PRIVATE 
         
-)
-
-# Create uutils lib
-add_library(UtilsLib STATIC)
+# )
 
 target_sources(
     UtilsLib
-    PRIVATE 
-        vec_base.cpp
-        vec_utils.cpp
-        vec_funcs.cpp
+    PRIVATE
+        vec/vec_wrapper_glm.cpp       
 )

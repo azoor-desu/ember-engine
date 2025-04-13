@@ -1,8 +1,6 @@
 // others
 #include "pch.h"
-#include "util/vec_base.h"
-#include "util/vec_funcs.h"
-#include "util/vec_utils.h"
+#include "util/vec/vec.h"
 
 int main()
 {
@@ -19,12 +17,13 @@ int main()
     hehe1 += hehe2;
     hehe2 = -hehe2;
 
-    std::print("hehe1 is {},{} and hehe2 is {}\n", hehe1[0], hehe1[1], hehe2);
+    std::print("hehe1 is {},{} and hehe2 {}\n", hehe1[0], hehe1[1], hehe2);
 
     hehe1 = ember::embVec2(2.f, 3.f);
     hehe2 = ember::embVec2(4.f, 5.f);
-    std::print("normalized is {} and {} and mag is {}\n", ember::VecNormalize(hehe2),
-               ember::VecNormalize(hehe2), ember::VecMagnitude(ember::VecNormalize(hehe2)));
+    // std::print("normalized is {} and {} and mag is {}\n", ember::VecNormalize(hehe2),
+    //            ember::VecNormalize(hehe2), ember::VecMagnitude(ember::VecNormalize(hehe2)));
+
 
     return 0;
 }
