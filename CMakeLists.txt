@@ -98,6 +98,12 @@ add_subdirectory(src)
 # INTERFACE - [ LibA ][ LibB (Partially) ] >> LibA links to LibB, but does not require B internally. Used for header-only library.
 if (UNIX)
 target_link_libraries(
+    UtilsLib
+    PUBLIC 
+        PkgConfig::glm
+)
+
+target_link_libraries(
     MainExe
     PUBLIC 
         PkgConfig::vulkan 
