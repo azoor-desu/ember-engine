@@ -12,10 +12,10 @@ constexpr embF64 embLn2_F64 = 0.693147181;
 constexpr embF32 embSqrt2 = 1.41421356237f;
 constexpr embF64 embSqrt2_F64 = 1.41421356237;
 
-[[nodiscard]] constexpr embF64 RadianToDegree(embF64 rad) { return rad * 180.0 / embPI_F64; }
-[[nodiscard]] constexpr embF32 RadianToDegree(embF32 rad) { return rad * 180.f / embPI; }
-[[nodiscard]] constexpr embF64 DegreeToRadian(embF64 deg) { return deg * embPI_F64 / 180.0; }
-[[nodiscard]] constexpr embF32 DegreeToRadian(embF32 deg) { return deg * embPI / 180.f; }
+// [[nodiscard]] constexpr embF64 RadianToDegree(embF64 rad) { return rad * 180.0 / embPI_F64; }
+// [[nodiscard]] constexpr embF32 RadianToDegree(embF32 rad) { return rad * 180.f / embPI; }
+// [[nodiscard]] constexpr embF64 DegreeToRadian(embF64 deg) { return deg * embPI_F64 / 180.0; }
+// [[nodiscard]] constexpr embF32 DegreeToRadian(embF32 deg) { return deg * embPI / 180.f; }
 
 // Not complete. Trivial but more lightweight implementation. Full implementation:
 // https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/

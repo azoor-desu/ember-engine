@@ -7,33 +7,48 @@
 
 EMB_NAMESPACE_START
 
-
+// boolean type
 using embBool = bool;
 // UTF-8 char
 using embChar = char;
-// UTF-16
+// UTF-16 char
 using embLChar = char16_t;
-// UTF-16/32, system preferred. 16 usually, 32 on Linux.
+// UTF-16/32, system preferred. usually 16 on other platforms, 32 on Linux.
 using embWChar = wchar_t;
 
-using embBitmask8 = uint8_t; // 8-bit bitmask for bit operations
-using embBitmask16 = uint16_t; // 16-bit bitmask for bit operations
-using embBitmask32 = uint32_t; // 32-bit bitmask for bit operations
-using embBitmask64 = uint64_t; // 64-bit bitmask for bit operations
+// 8-bit bitmask for bit operations
+using embBitmask8 = uint8_t;
+// 16-bit bitmask for bit operations
+using embBitmask16 = uint16_t;
+// 32-bit bitmask for bit operations
+using embBitmask32 = uint32_t;
+// 64-bit bitmask for bit operations
+using embBitmask64 = uint64_t;
 
+// Size of memory address space, usually 64bit.
 using embMemSize = std::size_t;
 
-using embS8 = int8_t; // 8-bits, 1 byte, signed
-using embU8 = uint8_t; // 8-bits, 1 byte, unsigned
-using embS16 = int16_t; // 16-bits, 2 bytes, signed
-using embU16 = uint16_t; // 16-bits, 2 bytes, unsigned
-using embS32 = int32_t; // 32-bits, 4 bytes, signed
-using embU32 = uint32_t; // 32-bits, 4 bytes, unsigned
-using embS64 = int64_t; // 64-bits, 8 bytes, signed
-using embU64 = uint64_t; // 64-bits, 8 bytes, unsigned
+// 8-bits, 1 byte, signed
+using embS8 = int8_t;
+// 8-bits, 1 byte, unsigned
+using embU8 = uint8_t;
+// 16-bits, 2 bytes, signed
+using embS16 = int16_t;
+// 16-bits, 2 bytes, unsigned
+using embU16 = uint16_t;
+// 32-bits, 4 bytes, signed
+using embS32 = int32_t;
+// 32-bits, 4 bytes, unsigned
+using embU32 = uint32_t;
+// 64-bits, 8 bytes, signed
+using embS64 = int64_t;
+// 64-bits, 8 bytes, unsigned
+using embU64 = uint64_t;
 
-using embF32 = float; // 32-bits, 4 bytes
-using embF64 = double; // 64-bits, 8 bytes
+// 32-bits, 4 bytes
+using embF32 = float;
+// 64-bits, 8 bytes
+using embF64 = double;
 
 constexpr embS8 embS8_MAX = std::numeric_limits<embS8>::max();
 constexpr embS8 embS8_MIN = std::numeric_limits<embS8>::min();
