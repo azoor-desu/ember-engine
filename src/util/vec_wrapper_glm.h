@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../types.h"
+#include "types.h"
 
 // Feature toggles (before #include "glm/glm.hpp") TODO: MOVE TO SOME COMMON PLACE FOR MATRIX TOO
 //#define GLM_FORCE_MESSAGES // TODO: Toggle on/off with debug

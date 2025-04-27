@@ -1,6 +1,7 @@
 // others
 #include "pch.h"
-#include "util/vec/vec.h"
+#include "util/vec.h"
+#include "util/vec_utils.h"
 
 int main()
 {

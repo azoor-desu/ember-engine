@@ -7,5 +7,6 @@
 target_sources(
     UtilsLib
     PRIVATE
-        vec/vec_wrapper_glm.cpp       
+        vec_wrapper_glm.cpp
+        vec_utils.cpp
 )

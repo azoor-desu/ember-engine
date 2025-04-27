@@ -100,7 +100,7 @@ if (UNIX)
 target_link_libraries(
     UtilsLib
     PUBLIC 
-        PkgConfig::glm
+        PkgConfig::glm # doesn't seem to be required...? Builds without including glm
 )
 
 target_link_libraries(
@@ -108,7 +108,6 @@ target_link_libraries(
     PUBLIC 
         PkgConfig::vulkan 
         PkgConfig::glfw3
-        PkgConfig::glm
         UtilsLib
 )
 endif()

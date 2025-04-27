@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../types.h"
+#include "types.h"
 
 // proper "wrapper" model is to wrap every single call from an extern lib to our vec class.
 // [extern_wrapper] > [interface] > [engine]
