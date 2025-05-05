@@ -1,7 +1,7 @@
 target_sources(
     MainExe
     PRIVATE 
-        main.cpp
+        #main.cpp
         pch.cpp
 )
 

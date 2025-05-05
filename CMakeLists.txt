@@ -16,7 +16,7 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # Make CMAKE generate compile_commands.json in /out folder
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+#set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # sets the CWD of exec to some other place.
 set(WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
@@ -41,7 +41,7 @@ set_target_properties(
         RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR} # sets the output dir of the exec to root folder
         RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}
         OUTPUT_NAME "EmberEngine"
-        #SUFFIX ".out"
+        SUFFIX ".out"
 )
 target_precompile_headers(MainExe PRIVATE src/pch.h) # enable pch
 
@@ -58,33 +58,44 @@ if (UNIX)
 # Finds the pkg-config executable, adds the pkg_check_modules() function, among others.
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(glfw3 REQUIRED IMPORTED_TARGET glfw3)
-pkg_check_modules(vulkan REQUIRED IMPORTED_TARGET vulkan)
+#pkg_check_modules(vulkan REQUIRED IMPORTED_TARGET vulkan)
+find_package(OpenGL REQUIRED COMPONENTS OpenGL)
 pkg_check_modules(glm REQUIRED IMPORTED_TARGET glm)
-# target_include_directories(
-#    PkgConfig::glfw3
-#    PRIVATE 
-#        ${OPENGL_INCLUDE_DIRS}
-# )
+target_include_directories(
+    MainExe
+    PUBLIC
+        lib # general?
+        lib/imgui  # for imgui internal headers to work
+)
+
 endif()
 # ======================== END CREATE TARGETS ========================
 
 # ======================== START TARGET SOURCES ========================
 # Adding source files (if any)
-# target_sources(
-#     MainExe
-#     PRIVATE 
-#         main.cpp
-# )
+target_sources(
+    MainExe
+    PRIVATE 
+        lib/imgui/imgui.cpp
+        lib/imgui/imgui_demo.cpp
+        lib/imgui/imgui_draw.cpp
+        lib/imgui/imgui_tables.cpp
+        lib/imgui/imgui_widgets.cpp
+        lib/imgui/backends/imgui_impl_glfw.cpp
+        lib/imgui/backends/imgui_impl_opengl3.cpp
+        src/main.cpp
+)
 
 # Adding include dirs (if any):
 # PUBLIC: Any other targets that link to this target needs to have this include dir too
 # PRIVATE: Any other targets that link to this target will ignore this dir
 # INTERFACE: Don't apply to this target, apply for others.
-target_include_directories(
-    MainExe
-    PUBLIC
-        src
-)
+# target_include_directories(
+#     MainExe
+#     PUBLIC
+#         src
+#         lib/imgui
+# )
 
 # add all direct subdirs here
 add_subdirectory(src)
@@ -106,7 +117,8 @@ target_link_libraries(
 target_link_libraries(
     MainExe
     PUBLIC 
-        PkgConfig::vulkan 
+        #PkgConfig::vulkan 
+        OpenGL::OpenGL
         PkgConfig::glfw3
         UtilsLib
 )
@@ -121,13 +133,14 @@ endif()
 #                RESULT_VARIABLE GIT_SUBMOD_RESULT)
 
 # creates symlink of compile_commands.json in root.
-if (UNIX)
-file(CREATE_LINK
-  "${CMAKE_BINARY_DIR}/compile_commands.json"
-  "${CMAKE_SOURCE_DIR}/compile_commands.json"
-  SYMBOLIC
-)
-endif()
+# EDIT: Not needed right now. clangd auto searches the BINARY_DIR then the root, so redundant.
+# if (UNIX)
+# file(CREATE_LINK
+#   "${CMAKE_BINARY_DIR}/compile_commands.json"
+#   "${CMAKE_SOURCE_DIR}/compile_commands.json"
+#   SYMBOLIC
+# )
+# endif()
 
 # copies the exec from build folder to root
 #add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
