@@ -32,7 +32,6 @@ set(WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
 add_compile_options(-fno-exceptions)
 
 # ======================== START CREATE TARGETS ========================
-
 # Main EXE target
 add_executable(MainExe)
 set_target_properties(
@@ -51,40 +50,15 @@ target_precompile_headers(MainExe PRIVATE src/pch.h) # enable pch
 
 # Custom LIB targets
 add_library(UtilsLib STATIC)
-
-# Extern LIB Targets
-if (UNIX)
-# Uses libraries/packages from built-in package manager.
-# Finds the pkg-config executable, adds the pkg_check_modules() function, among others.
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(glfw3 REQUIRED IMPORTED_TARGET glfw3)
-#pkg_check_modules(vulkan REQUIRED IMPORTED_TARGET vulkan)
-find_package(OpenGL REQUIRED COMPONENTS OpenGL)
-pkg_check_modules(glm REQUIRED IMPORTED_TARGET glm)
-target_include_directories(
-    MainExe
-    PUBLIC
-        lib # general?
-        lib/imgui  # for imgui internal headers to work
-)
-
-endif()
 # ======================== END CREATE TARGETS ========================
 
 # ======================== START TARGET SOURCES ========================
 # Adding source files (if any)
-target_sources(
-    MainExe
-    PRIVATE 
-        lib/imgui/imgui.cpp
-        lib/imgui/imgui_demo.cpp
-        lib/imgui/imgui_draw.cpp
-        lib/imgui/imgui_tables.cpp
-        lib/imgui/imgui_widgets.cpp
-        lib/imgui/backends/imgui_impl_glfw.cpp
-        lib/imgui/backends/imgui_impl_opengl3.cpp
-        src/main.cpp
-)
+# target_sources(
+#     MainExe
+#     PRIVATE 
+#         src/main.cpp
+# )
 
 # Adding include dirs (if any):
 # PUBLIC: Any other targets that link to this target needs to have this include dir too
@@ -93,12 +67,12 @@ target_sources(
 # target_include_directories(
 #     MainExe
 #     PUBLIC
-#         src
-#         lib/imgui
+#         lib # For general libraries...
 # )
 
 # add all direct subdirs here
 add_subdirectory(src)
+add_subdirectory(lib)
 #...
 # ======================== END TARGET SOURCES ========================
 
@@ -107,22 +81,11 @@ add_subdirectory(src)
 # PRIVATE - [ LibA [LibB]] >> LibA links to PRIVATE LibB. Other linking Libs cannot use LibB
 # PUBLIC - [ LibA ][ LibB ] >> LibA links to PUBLIC LibB. Other linking Libs can use LibB
 # INTERFACE - [ LibA ][ LibB (Partially) ] >> LibA links to LibB, but does not require B internally. Used for header-only library.
-if (UNIX)
-target_link_libraries(
-    UtilsLib
-    PUBLIC 
-        PkgConfig::glm # doesn't seem to be required...? Builds without including glm
-)
-
 target_link_libraries(
     MainExe
     PUBLIC 
-        #PkgConfig::vulkan 
-        OpenGL::OpenGL
-        PkgConfig::glfw3
         UtilsLib
 )
-endif()
 # ======================== END LINKING ========================
 
 

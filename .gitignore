@@ -523,4 +523,5 @@ imgui.ini
 
 # Blacklist
 EmberEngine
+EmberEngine.out
 EmberEngine.exe

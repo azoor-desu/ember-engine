@@ -1,9 +1,9 @@
 target_sources(
     MainExe
     PRIVATE 
-        #main.cpp
+        main.cpp
         pch.cpp
 )
 
 add_subdirectory(util)
-add_subdirectory(debug)
+add_subdirectory(tools)
