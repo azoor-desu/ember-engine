@@ -28,23 +28,24 @@ endif()
 
 # ========= IMGUI =========
 # No packages avail, manually download and include headers.
+if (PROJ_BUILD_TYPE MATCHES Editor)
+    # Adding header dirs (if any)
+    target_include_directories(
+        MainExe
+        PUBLIC
+            imgui  # for imgui internal headers to work
+    )
 
-# Adding header dirs (if any)
-target_include_directories(
-    MainExe
-    PUBLIC
-        imgui  # for imgui internal headers to work
-)
-
-# Adding source files (if any)
-target_sources(
-    MainExe
-    PRIVATE 
-        imgui/imgui.cpp
-        imgui/imgui_demo.cpp
-        imgui/imgui_draw.cpp
-        imgui/imgui_tables.cpp
-        imgui/imgui_widgets.cpp
-        imgui/backends/imgui_impl_glfw.cpp
-        imgui/backends/imgui_impl_opengl3.cpp
-)
+    # Adding source files (if any)
+    target_sources(
+        MainExe
+        PRIVATE 
+            imgui/imgui.cpp
+            imgui/imgui_demo.cpp
+            imgui/imgui_draw.cpp
+            imgui/imgui_tables.cpp
+            imgui/imgui_widgets.cpp
+            imgui/backends/imgui_impl_glfw.cpp
+            imgui/backends/imgui_impl_opengl3.cpp
+    )
+endif()

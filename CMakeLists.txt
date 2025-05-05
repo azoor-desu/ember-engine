@@ -31,18 +31,42 @@ set(WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
 # disable exceptions globally. Yeet.
 add_compile_options(-fno-exceptions)
 
+# ======================== BUILD TOGGLES ========================
+# set(CMAKE_BUILD_TYPE Release) # Eh don't set here, set in cmake tab in vscode lol
+set(PROJ_BUILD_TYPE Editor) # Editor || Engine
+
 # ======================== START CREATE TARGETS ========================
 # Main EXE target
 add_executable(MainExe)
+
+if (PROJ_BUILD_TYPE MATCHES Engine)
+    set(PROJ_OUTPUT_NAME "EmberEngine")
+else()
+    set(PROJ_OUTPUT_NAME "EmberEditor")
+    target_compile_definitions(MainExe PRIVATE EMB_EDITOR)
+endif()
+
+if (WIN32)
+    set(PROJ_OUTPUT_SUFFIX ".exe")
+else()
+    set(PROJ_OUTPUT_SUFFIX ".out")
+endif()
+
 set_target_properties(
-    MainExe 
+    MainExe
     PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY_DEBUG ${PROJECT_SOURCE_DIR} # sets the output dir of the exec to root folder
         RUNTIME_OUTPUT_DIRECTORY_RELEASE ${PROJECT_SOURCE_DIR}
-        OUTPUT_NAME "EmberEngine"
-        SUFFIX ".out"
+        OUTPUT_NAME ${PROJ_OUTPUT_NAME}-${CMAKE_BUILD_TYPE}
+        SUFFIX ${PROJ_OUTPUT_SUFFIX}
 )
-target_precompile_headers(MainExe PRIVATE src/pch.h) # enable pch
+
+# enable pch
+if (PROJ_BUILD_TYPE MATCHES Engine)
+    target_precompile_headers(MainExe PRIVATE src/pch-engine.h) 
+else()
+    target_precompile_headers(MainExe PRIVATE src/pch-editor.h)
+endif()
 
 # STATIC - LIB. Requires header files to use.
 # SHARED - DLLs with symbols.
@@ -83,7 +107,7 @@ add_subdirectory(lib)
 # INTERFACE - [ LibA ][ LibB (Partially) ] >> LibA links to LibB, but does not require B internally. Used for header-only library.
 target_link_libraries(
     MainExe
-    PUBLIC 
+    PUBLIC
         UtilsLib
 )
 # ======================== END LINKING ========================
