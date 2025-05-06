@@ -32,8 +32,9 @@ set(WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
 add_compile_options(-fno-exceptions)
 
 # ======================== BUILD TOGGLES ========================
-# set(CMAKE_BUILD_TYPE Release) # Eh don't set here, set in cmake tab in vscode lol
-set(PROJ_BUILD_TYPE Editor) # Editor || Engine
+# Moved to cmake-variants.yaml and toggled via cmake UI
+#set(CMAKE_BUILD_TYPE Release)
+#set(PROJ_BUILD_TYPE Editor) # Editor || Engine
 
 # ======================== START CREATE TARGETS ========================
 # Main EXE target
