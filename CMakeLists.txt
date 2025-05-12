@@ -89,11 +89,11 @@ add_library(UtilsLib STATIC)
 # PUBLIC: Any other targets that link to this target needs to have this include dir too
 # PRIVATE: Any other targets that link to this target will ignore this dir
 # INTERFACE: Don't apply to this target, apply for others.
-# target_include_directories(
-#     MainExe
-#     PUBLIC
-#         lib # For general libraries...
-# )
+target_include_directories(
+    MainExe
+    PUBLIC
+        src # For source file includes
+)
 
 # add all direct subdirs here
 add_subdirectory(src)

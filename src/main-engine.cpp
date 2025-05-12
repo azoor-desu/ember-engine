@@ -6,6 +6,9 @@
 #include "util/vec.h"
 #include "util/vec_utils.h"
 
+#include "engine/engine.h"
+#include "engine/timer.h"
+
 int main()
 {
     using namespace ember;
@@ -41,6 +44,23 @@ int main()
 
 
     //ImGUI::ShowDemoWindow();
+
+    ember::Engine engine;
+    engine.Init();
+    Timer timer = Timer::Instance();
+    timer.SetSimTimeScale(1.f);
+    timer.SetTargetFramerate(30);
+
+    while (engine.IsEngineRunning())
+    {
+        if (timer.Tick())
+        {
+            engine.Update();
+            engine.Render();
+        }
+    }
+
+    engine.Exit();
 
     return 0;
 }

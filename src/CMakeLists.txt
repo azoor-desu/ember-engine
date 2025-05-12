@@ -5,6 +5,7 @@ if (PROJ_BUILD_TYPE MATCHES Engine)
             main-engine.cpp
             pch-engine.cpp
     )
+    add_subdirectory(engine)
 else()
     target_sources(
         MainExe

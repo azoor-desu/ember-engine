@@ -84,7 +84,7 @@ BinPackParameters: true
 BitFieldColonSpacing: Both
 BraceWrapping:
   AfterCaseLabel: true
-  AfterClass: false
+  AfterClass: true
   AfterControlStatement: Always
   AfterEnum: true
   AfterFunction: true
@@ -96,7 +96,7 @@ BraceWrapping:
   BeforeCatch: true
   BeforeElse: true
   BeforeLambdaBody: true
-  BeforeWhile: false
+  BeforeWhile: true
   IndentBraces: false
   SplitEmptyFunction: false
   SplitEmptyRecord: false
