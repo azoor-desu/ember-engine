@@ -111,17 +111,22 @@ embBool Timer::Tick() noexcept
 
     // Perform sim if any
     m_SimStepCount = 0; // reset step count for frame
-    constexpr embU64 MAX_SIM_STEPS = 2;
+    constexpr embU32 MAX_SIM_STEPS = 2;
 
-    if (m_SimTimeElapsed >= m_LastFixedUpdateTime)
+    if (m_TimeScale > 0.f && m_SimTimeElapsed >= m_LastFixedUpdateTime)
     {
         // Check how many steps to do. Need at least 1 so +1, and add any additional counts with the division
-        m_SimStepCount = 1 + (m_SimTimeElapsed - m_LastFixedUpdateTime) / m_TargetSimTime;
+        // -1 before division to avoid rolling back 0 nanoseconds.
+        m_SimStepCount = 1 + (m_SimTimeElapsed - m_LastFixedUpdateTime - 1) / m_TargetSimTime;
 
         // if too many simulations to be done for this frame, perform only max sims
         // roll back simulated time to the max sim time.
         if (m_SimStepCount > MAX_SIM_STEPS)
         {
+            printf("Warning: Skipping %d planned tick(s), rolled back by %ldns (%lf ticks)\n",
+                   m_SimStepCount - MAX_SIM_STEPS,
+                   m_SimTimeElapsed - (m_LastFixedUpdateTime + m_TargetSimTime * MAX_SIM_STEPS),
+                   (embF64)(m_SimTimeElapsed - (m_LastFixedUpdateTime + m_TargetSimTime * MAX_SIM_STEPS)) / (embF64)m_TargetSimTime);
             // Note: by right, if m_SimTimeElapsed is directly equal to Max Sim time, the engine should
             // be simulating the next tick, making the engine simulate MAX_SIM_STEPS + 1 this frame.
             // To be pedantic, m_SimTimeElapsed should be set to a little BEFORE the max sim time.
@@ -134,8 +139,6 @@ embBool Timer::Tick() noexcept
         // Compute next update time
         m_LastFixedUpdateTime += m_TargetSimTime * m_SimStepCount;
     }
-
-    //m_PhyInterpAmt = (float)(timeSinceLastFixedStep * m_TargetFixedRate);
 
     printf("real time %lf, dt: %f, fixeddt: %f, timescale %f, sim time %lf, sim count %u, interp: %f\n",
            GetRealTimeElapsed(),

@@ -49,7 +49,8 @@ int main()
     engine.Init();
     Timer timer = Timer::Instance();
     timer.SetSimTimeScale(1.f);
-    timer.SetTargetFramerate(30);
+    timer.SetTargetSimRate(20);
+    timer.SetTargetFramerate(60);
 
     while (engine.IsEngineRunning())
     {
