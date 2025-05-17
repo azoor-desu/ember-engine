@@ -4,7 +4,7 @@
 # Targets are either LIBS or EXES or a bunch of header-only files. Each target can contain compilation settings for that build.
 # It's also possible to chain multiple targets together so that when you build your main project, the dependencies get compiled as well.
 
-cmake_minimum_required(VERSION 3.30.0)
+cmake_minimum_required(VERSION 3.29.5)
 project(EmberEngine 
         VERSION 0.1.0
         DESCRIPTION "Real Time simulation engine...?"
@@ -28,13 +28,13 @@ set(WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
 #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_SOURCE_DIR}/build/debug")
 #set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR})
 
-# disable exceptions globally. Yeet.
-add_compile_options(-fno-exceptions)
-
 if (MSVC)
-    # warning level 4
-    add_compile_options(/W4)
+    add_compile_options(/W4) # warning level 4
+    add_compile_options(/MP /INCREMENTAL) # parallel compile, incremental linking
+    add_compile_definitions(NOMINMAX)
+    add_compile_options(/wd4099 /wd4477 /wd4100 /wd4305)
 else()
+    add_compile_options(-fno-exceptions) # disable exceptions globally. Yeet.
     add_compile_options(-Wall -Wextra -Wpedantic) # additional warnings
 endif()
 
@@ -91,15 +91,9 @@ if (PROJ_BUILD_TYPE MATCHES Editor)
 endif()
 
 # forward definitions to preprocessor
-# if (PROJ_BUILD_TYPE MATCHES Engine)
-#     target_compile_definitions(EngineLib PRIVATE EMB_BUILD_TYPE_ENGINE)
-# else()
-#     target_compile_definitions(MainExe PRIVATE EMB_BUILD_TYPE_EDITOR)
-# endif()
-
 if (PLATFORM_TYPE MATCHES Linux)
     target_compile_definitions(EngineLib PRIVATE EMB_PLATFORM_LINUX)
-else()
+elseif(PLATFORM_TYPE MATCHES Windows)
     target_compile_definitions(MainExe PRIVATE EMB_PLATFORM_WINDOWS)
 endif()
 

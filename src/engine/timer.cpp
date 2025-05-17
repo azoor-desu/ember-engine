@@ -117,7 +117,7 @@ embBool Timer::ShouldUpdate() noexcept
     {
         // Check how many steps to do. Need at least 1 so +1, and add any additional counts with the division
         // -1 before division to avoid rolling back 0 nanoseconds.
-        m_SimStepCount = 1 + (m_SimTimeElapsed - m_LastFixedUpdateTime - 1) / m_TargetSimTime;
+        m_SimStepCount = 1 + (embU32)((m_SimTimeElapsed - m_LastFixedUpdateTime - 1) / m_TargetSimTime);
 
         // if too many simulations to be done for this frame, perform only max sims
         // roll back simulated time to the max sim time.

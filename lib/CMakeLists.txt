@@ -1,36 +1,68 @@
 # Dump all the LIB stuff here
 
-#========= LINUX ONLY =========
-# Looks for linux packages. For windows, auto download them or something.
-if (UNIX)
+if (PLATFORM_TYPE MATCHES Linux)
     # Uses libraries/packages from built-in package manager.
     # Finds the pkg-config executable, adds the pkg_check_modules() function, among others.
     find_package(PkgConfig REQUIRED)
+endif()
+
+# ======================= GLFW =======================
+if (PLATFORM_TYPE MATCHES Linux)
+
+    pkg_check_modules(glfw3 REQUIRED IMPORTED_TARGET glfw3)
+    target_link_libraries(EngineLib PUBLIC PkgConfig::glfw3)
+
+elseif(PLATFORM_TYPE MATCHES Windows)
+
+    target_include_directories(EngineLib PUBLIC glfw/include)
+    target_link_directories(EngineLib PUBLIC glfw/lib-vc2022) # build static lib and dump here
+    target_link_libraries(EngineLib PUBLIC glfw3) # name of static lib
+
+endif()
+
+# ======================= GLEW =======================
+if (PLATFORM_TYPE MATCHES Linux)
+
+    pkg_check_modules(glew REQUIRED IMPORTED_TARGET glew)
+    target_link_libraries(EngineLib PUBLIC PkgConfig::glew)
+
+elseif(PLATFORM_TYPE MATCHES Windows)
+
+    target_include_directories(EngineLib PUBLIC glew/include)
+    target_link_directories(EngineLib PUBLIC glew/lib/x64)  # build static lib and dump here
+    target_link_libraries(EngineLib PUBLIC glew32) # name of static lib
+    # also requires .dll beside the exe...
+
+endif()
+
+# ======================= GLM =======================
+if (PLATFORM_TYPE MATCHES Linux)
+
+    pkg_check_modules(glm REQUIRED IMPORTED_TARGET glm)
+    target_link_libraries(UtilsLib PUBLIC PkgConfig::glm) # doesn't seem to be required...? Builds without including glm
+
+elseif(PLATFORM_TYPE MATCHES Windows)
+
+    target_include_directories(UtilsLib PUBLIC glm)
+    target_include_directories(EngineLib PUBLIC glm)
+
+endif()
+
+# ======================= OpenGL =======================
+if (PLATFORM_TYPE MATCHES Linux)
 
     #pkg_check_modules(vulkan REQUIRED IMPORTED_TARGET vulkan)
     find_package(OpenGL REQUIRED COMPONENTS OpenGL)
-    pkg_check_modules(glew REQUIRED IMPORTED_TARGET glew)
+    target_link_libraries(EngineLib PUBLIC OpenGL::OpenGL)
 
-    pkg_check_modules(glfw3 REQUIRED IMPORTED_TARGET glfw3)
-    pkg_check_modules(glm REQUIRED IMPORTED_TARGET glm)
+elseif(PLATFORM_TYPE MATCHES Windows)
 
-    # do linkage here too, cos the scope of these packages are lost outside of this file.
-    target_link_libraries(
-        UtilsLib
-        PUBLIC 
-            PkgConfig::glm # doesn't seem to be required...? Builds without including glm
-    )
-    target_link_libraries(
-        EngineLib
-        PUBLIC
-            PkgConfig::glm
-            OpenGL::OpenGL
-            PkgConfig::glew
-            PkgConfig::glfw3
-    )
+    find_package(OpenGL REQUIRED COMPONENTS OpenGL)
+    target_link_libraries(EngineLib PUBLIC OpenGL::GL)
+
 endif()
 
-# ========= IMGUI =========
+# ======================= IMGUI =======================
 # No packages avail, manually download and include headers.
 if (PROJ_BUILD_TYPE MATCHES Editor)
     # Adding header dirs (if any)
