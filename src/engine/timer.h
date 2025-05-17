@@ -19,6 +19,7 @@ class Timer
 
     static Timer& Instance()
     {
+        // thread safe singeton
         static Timer timer;
         return timer;
     }
@@ -50,8 +51,6 @@ class Timer
     embF32 GetSimTimeScale() const noexcept;
 
   private:
-    static Timer* s_SingetonInstance;
-
     ClockDurationType m_DT = 0; // time since last update
     ClockDurationType m_SimTimeElapsed = 0; // time elapsed in simulation, affected by time scale.
     ClockDurationType m_RealTimeElapsed = 0;

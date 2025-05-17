@@ -1,33 +1,47 @@
-    buildType:
-      default: debug
-      choices:
-        debug:
-          short: Debug
-          long: Emit debug information
-          buildType: Debug
-        release:
-          short: Release
-          long: Optimize generated code
-          buildType: Release
-        relwithdebinfo:
-          short: Release With Debug Info
-          long: Release build but with debug info generated
-          buildType: RelWithDebInfo
-        minsizerel:
-          short: Minimal Size Release
-          long: Optimized build with minimal build size
-          buildType: MinSizeRel
+platform:
+  default: linux
+  choices:
+    linux:
+      short: Linux
+      long: Linux Platform
+      settings:
+        PLATFORM_TYPE: Linux
+    windows:    
+      short: Windows
+      long: Windows Platform
+      settings:
+        PLATFORM_TYPE: Windows
 
-    iseditor:
-      default: engine
-      choices:
-        engine:
-          short: Engine
-          long: Standalone game application
-          settings:
-            PROJ_BUILD_TYPE: Engine
-        editor:    
-          short: Editor
-          long: Game Editor using Engine
-          settings:
-            PROJ_BUILD_TYPE: Editor
+iseditor:
+  default: engine
+  choices:
+    engine:
+      short: Engine
+      long: Standalone game application
+      settings:
+        PROJ_BUILD_TYPE: Engine
+    editor:    
+      short: Editor
+      long: Game Editor built upon Engine library
+      settings:
+        PROJ_BUILD_TYPE: Editor
+
+buildType:
+  default: debug
+  choices:
+    debug:
+      short: Debug
+      long: Emit debug information
+      buildType: Debug
+    release:
+      short: Release
+      long: Optimize generated code
+      buildType: Release
+    relwithdebinfo:
+      short: Release With Debug Info
+      long: Release build but with debug info generated
+      buildType: RelWithDebInfo
+    minsizerel:
+      short: Minimal Size Release
+      long: Optimized build with minimal build size
+      buildType: MinSizeRel

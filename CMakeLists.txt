@@ -31,6 +31,13 @@ set(WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}")
 # disable exceptions globally. Yeet.
 add_compile_options(-fno-exceptions)
 
+if (MSVC)
+    # warning level 4
+    add_compile_options(/W4)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic) # additional warnings
+endif()
+
 # ======================== BUILD TOGGLES ========================
 # Moved to cmake-variants.yaml and toggled via cmake UI
 #set(CMAKE_BUILD_TYPE Release)
@@ -47,7 +54,7 @@ else()
     target_compile_definitions(MainExe PRIVATE EMB_EDITOR)
 endif()
 
-if (WIN32)
+if (PLATFORM_TYPE MATCHES Windows)
     set(PROJ_OUTPUT_SUFFIX ".exe")
 else()
     set(PROJ_OUTPUT_SUFFIX ".out")
@@ -68,6 +75,22 @@ if (PROJ_BUILD_TYPE MATCHES Engine)
 else()
     target_precompile_headers(MainExe PRIVATE src/pch-editor.h)
 endif()
+
+# forward definitions to preprocessor
+if (PROJ_BUILD_TYPE MATCHES Engine)
+    target_compile_definitions(MainExe PRIVATE EMB_BUILD_TYPE_ENGINE)
+else()
+    target_compile_definitions(MainExe PRIVATE EMB_BUILD_TTYPE_EDITOR)
+endif()
+
+if (PLATFORM_TYPE MATCHES Linux)
+    target_compile_definitions(MainExe PRIVATE EMB_PLATFORM_LINUX)
+else()
+    target_compile_definitions(MainExe PRIVATE EMB_PLATFORM_WINDOWS)
+endif()
+
+#target_compile_definitions(MainExe PRIVATE EMB_USE_VULKAN)
+#target_compile_definitions(MainExe PRIVATE EMB_USE_OPENGL)
 
 # STATIC - LIB. Requires header files to use.
 # SHARED - DLLs with symbols.

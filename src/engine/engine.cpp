@@ -1,13 +1,20 @@
 #include "pch-engine.h"
+
+#include <GLFW/glfw3.h>
+
 #include "util/defines.h"
 
 #include "engine.h"
+#include "graphics.h"
+
 
 EMB_NAMESPACE_START
 
 void Engine::Init()
 {
     m_IsEngineRunning = true;
+
+    Graphics::Instance().Init();
 }
 
 void Engine::Update()
@@ -16,10 +23,12 @@ void Engine::Update()
 
 void Engine::Render()
 {
+    Graphics::Instance().Render(); // do i need this layer lmao
 }
 
-void Engine::Exit() noexcept
+void Engine::Destroy() noexcept
 {
+    Graphics::Instance().Destroy();
 }
 
 bool Engine::IsEngineRunning() const noexcept

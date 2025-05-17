@@ -6,9 +6,12 @@ if (UNIX)
     # Uses libraries/packages from built-in package manager.
     # Finds the pkg-config executable, adds the pkg_check_modules() function, among others.
     find_package(PkgConfig REQUIRED)
-    find_package(OpenGL REQUIRED COMPONENTS OpenGL)
-    pkg_check_modules(glfw3 REQUIRED IMPORTED_TARGET glfw3)
+
     #pkg_check_modules(vulkan REQUIRED IMPORTED_TARGET vulkan)
+    find_package(OpenGL REQUIRED COMPONENTS OpenGL)
+    pkg_check_modules(glew REQUIRED IMPORTED_TARGET glew)
+
+    pkg_check_modules(glfw3 REQUIRED IMPORTED_TARGET glfw3)
     pkg_check_modules(glm REQUIRED IMPORTED_TARGET glm)
 
     # do linkage here too, cos the scope of these packages are lost outside of this file.
@@ -22,6 +25,7 @@ if (UNIX)
         PUBLIC
             PkgConfig::glm
             OpenGL::OpenGL
+            PkgConfig::glew
             PkgConfig::glfw3
     )
 endif()

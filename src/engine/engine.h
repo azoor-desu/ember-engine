@@ -18,7 +18,7 @@ class Engine
     void Render();
 
     // Destroys all resources and exits.
-    void Exit() noexcept;
+    void Destroy() noexcept;
 
     // Is the application running
     bool IsEngineRunning() const noexcept;

@@ -1,5 +1,7 @@
-// others
+#ifdef EMB_BUILD_TYPE_ENGINE
+
 #include "pch-engine.h"
+
 #include "util/matrix_utils.h"
 #include "util/matrix_wrapper_glm.h"
 #include "util/types.h"
@@ -61,7 +63,9 @@ int main()
         }
     }
 
-    engine.Exit();
+    engine.Destroy();
 
     return 0;
 }
+
+#endif
