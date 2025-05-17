@@ -44,14 +44,17 @@ endif()
 #set(PROJ_BUILD_TYPE Editor) # Editor || Engine
 
 # ======================== START CREATE TARGETS ========================
-# Main EXE target
+# STATIC - LIB. Requires header files to use.
+# SHARED - DLLs with symbols.
+# MODULE - DLLs without symbols. Cannot be used to build.
+add_library(UtilsLib STATIC)
+add_library(EngineLib STATIC)
 add_executable(MainExe)
 
 if (PROJ_BUILD_TYPE MATCHES Engine)
     set(PROJ_OUTPUT_NAME "EmberEngine")
 else()
     set(PROJ_OUTPUT_NAME "EmberEditor")
-    target_compile_definitions(MainExe PRIVATE EMB_EDITOR)
 endif()
 
 if (PLATFORM_TYPE MATCHES Windows)
@@ -69,22 +72,33 @@ set_target_properties(
         SUFFIX ${PROJ_OUTPUT_SUFFIX}
 )
 
+set_target_properties(
+    UtilsLib
+    PROPERTIES
+        OUTPUT_NAME ${PROJECT_NAME}Utils${CMAKE_BUILD_TYPE}
+)
+
+set_target_properties(
+    EngineLib
+    PROPERTIES
+        OUTPUT_NAME ${PROJECT_NAME}${CMAKE_BUILD_TYPE}
+)
+
 # enable pch
-if (PROJ_BUILD_TYPE MATCHES Engine)
-    target_precompile_headers(MainExe PRIVATE src/pch-engine.h) 
-else()
+target_precompile_headers(EngineLib PRIVATE src/pch-engine.h) 
+if (PROJ_BUILD_TYPE MATCHES Editor)
     target_precompile_headers(MainExe PRIVATE src/pch-editor.h)
 endif()
 
 # forward definitions to preprocessor
-if (PROJ_BUILD_TYPE MATCHES Engine)
-    target_compile_definitions(MainExe PRIVATE EMB_BUILD_TYPE_ENGINE)
-else()
-    target_compile_definitions(MainExe PRIVATE EMB_BUILD_TTYPE_EDITOR)
-endif()
+# if (PROJ_BUILD_TYPE MATCHES Engine)
+#     target_compile_definitions(EngineLib PRIVATE EMB_BUILD_TYPE_ENGINE)
+# else()
+#     target_compile_definitions(MainExe PRIVATE EMB_BUILD_TYPE_EDITOR)
+# endif()
 
 if (PLATFORM_TYPE MATCHES Linux)
-    target_compile_definitions(MainExe PRIVATE EMB_PLATFORM_LINUX)
+    target_compile_definitions(EngineLib PRIVATE EMB_PLATFORM_LINUX)
 else()
     target_compile_definitions(MainExe PRIVATE EMB_PLATFORM_WINDOWS)
 endif()
@@ -92,12 +106,6 @@ endif()
 #target_compile_definitions(MainExe PRIVATE EMB_USE_VULKAN)
 #target_compile_definitions(MainExe PRIVATE EMB_USE_OPENGL)
 
-# STATIC - LIB. Requires header files to use.
-# SHARED - DLLs with symbols.
-# MODULE - DLLs without symbols. Cannot be used to build.
-
-# Custom LIB targets
-add_library(UtilsLib STATIC)
 # ======================== END CREATE TARGETS ========================
 
 # ======================== START TARGET SOURCES ========================
@@ -112,6 +120,12 @@ add_library(UtilsLib STATIC)
 # PUBLIC: Any other targets that link to this target needs to have this include dir too
 # PRIVATE: Any other targets that link to this target will ignore this dir
 # INTERFACE: Don't apply to this target, apply for others.
+target_include_directories(
+    EngineLib
+    PUBLIC
+        src # For source file includes
+)
+
 target_include_directories(
     MainExe
     PUBLIC
@@ -130,9 +144,14 @@ add_subdirectory(lib)
 # PUBLIC - [ LibA ][ LibB ] >> LibA links to PUBLIC LibB. Other linking Libs can use LibB
 # INTERFACE - [ LibA ][ LibB (Partially) ] >> LibA links to LibB, but does not require B internally. Used for header-only library.
 target_link_libraries(
-    MainExe
+    EngineLib
     PUBLIC
         UtilsLib
+)
+target_link_libraries(
+    MainExe
+    PUBLIC
+        EngineLib
 )
 # ======================== END LINKING ========================
 

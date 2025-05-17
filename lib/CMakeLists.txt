@@ -21,7 +21,7 @@ if (UNIX)
             PkgConfig::glm # doesn't seem to be required...? Builds without including glm
     )
     target_link_libraries(
-        MainExe
+        EngineLib
         PUBLIC
             PkgConfig::glm
             OpenGL::OpenGL

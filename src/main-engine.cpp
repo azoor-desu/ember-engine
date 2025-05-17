@@ -1,5 +1,3 @@
-#ifdef EMB_BUILD_TYPE_ENGINE
-
 #include "pch-engine.h"
 
 #include "util/matrix_utils.h"
@@ -67,5 +65,3 @@ int main()
 
     return 0;
 }
-
-#endif

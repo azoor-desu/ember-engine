@@ -1,5 +1,5 @@
 target_sources(
-    MainExe
+    EngineLib
     PRIVATE 
         engine.cpp
         graphics.cpp
