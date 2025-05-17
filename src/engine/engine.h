@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/defines.h"
+#include "util/macros.h"
 #include "util/types.h"
 
 EMB_NAMESPACE_START
@@ -8,6 +9,8 @@ EMB_NAMESPACE_START
 class Engine
 {
   public:
+    EMB_CLASS_SINGLETON_MACRO(Engine)
+
     // Initializes engine. Run once.
     void Init();
 

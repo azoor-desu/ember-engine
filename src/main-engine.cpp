@@ -50,11 +50,11 @@ int main()
     Timer timer = Timer::Instance();
     timer.SetSimTimeScale(1.f);
     timer.SetTargetSimRate(20);
-    timer.SetTargetFramerate(60);
+    timer.SetTargetFramerate(30);
 
     while (engine.IsEngineRunning())
     {
-        if (timer.Tick())
+        if (timer.ShouldUpdate())
         {
             engine.Update();
             engine.Render();

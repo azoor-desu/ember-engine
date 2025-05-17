@@ -25,8 +25,9 @@ using embBitmask32 = uint32_t;
 // 64-bit bitmask for bit operations
 using embBitmask64 = uint64_t;
 
+// Generic pointer type
 // Size of memory address space, usually 64bit.
-using embMemSize = std::size_t;
+using embPtr = std::size_t;
 
 // 8-bits, 1 byte, signed
 using embS8 = int8_t;

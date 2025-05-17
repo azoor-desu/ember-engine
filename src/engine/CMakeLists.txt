@@ -4,4 +4,5 @@ target_sources(
         engine.cpp
         graphics.cpp
         timer.cpp
+        window.cpp
 )

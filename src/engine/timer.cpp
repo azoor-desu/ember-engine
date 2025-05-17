@@ -77,7 +77,7 @@ embF32 Timer::GetSimTimeScale() const noexcept
     return m_TimeScale;
 }
 
-embBool Timer::Tick() noexcept
+embBool Timer::ShouldUpdate() noexcept
 {
     // How work:
     // Engine constantly checks if is able to update. If yes, run update, and fixed update if possible too.

@@ -3,6 +3,7 @@
 #include <chrono>
 
 #include "util/defines.h"
+#include "util/macros.h"
 #include "util/types.h"
 
 EMB_NAMESPACE_START
@@ -15,17 +16,12 @@ class Timer
     using ClockDurationType = ClockDuration::rep; // the underlying type of the value stored in the clock.
     using ClockTimePoint = Clock::time_point; // the time pulled from the Clock.
 
+    EMB_CLASS_SINGLETON_MACRO(Timer)
+
     Timer() : m_LastUpdateTimePointEpoch{Clock::now().time_since_epoch().count()}, m_AppStartTimePoint{Clock::now().time_since_epoch().count()} {};
 
-    static Timer& Instance()
-    {
-        // thread safe singeton
-        static Timer timer;
-        return timer;
-    }
-
     // Run in a while loop to constantly check if engine should update at this moment in time.
-    embBool Tick() noexcept;
+    embBool ShouldUpdate() noexcept;
     // Run with every engine update to check if Fixed update needs to happen or not this frame.
     // Returns the number of fixed updates to carry out for this frame (if updates were missed)
     embU32 ShouldFixedUpdate() const noexcept;

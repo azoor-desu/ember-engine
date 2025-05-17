@@ -6,6 +6,7 @@
 
 #include "engine.h"
 #include "graphics.h"
+#include "window.h"
 
 
 EMB_NAMESPACE_START
@@ -14,6 +15,7 @@ void Engine::Init()
 {
     m_IsEngineRunning = true;
 
+    WindowManager::Instance().Init();
     Graphics::Instance().Init();
 }
 
@@ -29,6 +31,7 @@ void Engine::Render()
 void Engine::Destroy() noexcept
 {
     Graphics::Instance().Destroy();
+    WindowManager::Instance().Destroy();
 }
 
 bool Engine::IsEngineRunning() const noexcept

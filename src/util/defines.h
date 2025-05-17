@@ -1,5 +1,7 @@
 #pragma once
 
+#include "macros.h"
+
 #ifndef TRUE
 #define TRUE 1
 #endif
@@ -15,13 +17,6 @@
 #ifndef UNUSED
 #define UNUSED(P) (P)
 #endif
-
-
-
-#define EMB_NAMESPACE_START \
-    namespace ember \
-    {
-#define EMB_NAMESPACE_END } // namespace ember
 
 // Toggles
 

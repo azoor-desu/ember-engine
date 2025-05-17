@@ -1,5 +1,6 @@
 #pragma once
 
+#include "util/macros.h"
 #include "util/types.h"
 
 EMB_NAMESPACE_START
@@ -7,12 +8,7 @@ EMB_NAMESPACE_START
 class Graphics
 {
   public:
-    static Graphics& Instance()
-    {
-        // thread safe singeton
-        static Graphics obj;
-        return obj;
-    }
+    EMB_CLASS_SINGLETON_MACRO(Graphics)
 
     void Init();
     void PreRender();
