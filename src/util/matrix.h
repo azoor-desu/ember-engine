@@ -12,9 +12,7 @@
 //  but im lazy so extern wrapper is just a typedef, and interface is just a simple include lmao.
 
 // Pick implementation to use.
-#define EMB_USE_MTX_GLM // lol move this elsewhere
-
-#ifdef EMB_USE_MTX_GLM
+#ifdef EMB_USE_GLM
 
 #include "matrix_macros.h"
 #include "wrapper_glm_common.h"
@@ -48,4 +46,4 @@ EMB_NAMESPACE_END
 EMB_DECLARE_MTX_TYPE_ALL(ember::embF32, F)
 EMB_DECLARE_MTX_TYPE_ALL(ember::embF64, F64)
 
-#endif // EMB_USE_MTX_GLM
+#endif // EMB_USE_GLM

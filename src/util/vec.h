@@ -11,7 +11,7 @@
 
 //  but im lazy so extern wrapper is just a typedef, and interface is just a simple include lmao.
 
-#ifdef EMB_USE_VEC_GLM
+#ifdef EMB_USE_GLM
 
 #include "vec_macros.h"
 #include "wrapper_glm_common.h"
@@ -49,4 +49,4 @@ EMB_NAMESPACE_END
 EMB_DECLARE_VEC_TYPE_ALL(ember::embF32, F)
 EMB_DECLARE_VEC_TYPE_ALL(ember::embF64, F64)
 
-#endif // EMB_USE_VEC_GLM
+#endif // EMB_USE_GLM

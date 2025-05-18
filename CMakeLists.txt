@@ -105,9 +105,9 @@ else()
     target_compile_definitions(MainExe PRIVATE EMB_RELEASE)
 endif()
 
-target_compile_definitions(UtilsLib PRIVATE EMB_USE_VEC_GLM)
-target_compile_definitions(EngineLib PRIVATE EMB_USE_VEC_GLM)
-target_compile_definitions(MainExe PRIVATE EMB_USE_VEC_GLM)
+target_compile_definitions(UtilsLib PRIVATE EMB_USE_GLM)
+target_compile_definitions(EngineLib PRIVATE EMB_USE_GLM)
+target_compile_definitions(MainExe PRIVATE EMB_USE_GLM)
 
 #target_compile_definitions(MainExe PRIVATE EMB_USE_VULKAN)
 #target_compile_definitions(MainExe PRIVATE EMB_USE_OPENGL)

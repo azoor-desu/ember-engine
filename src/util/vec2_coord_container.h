@@ -12,7 +12,7 @@
 
 //  but im lazy so extern wrapper is just a typedef, and interface is just a simple include lmao.
 
-#ifdef EMB_USE_VEC_GLM
+#ifdef EMB_USE_GLM
 
 #include "vec_macros.h"
 #include "wrapper_glm_common.h"
@@ -44,4 +44,4 @@ using embCoordInt = math::vec<2, ember::embS32>;
 using embCoord = math::vec<2, ember::embF32>;
 EMB_NAMESPACE_END
 
-#endif // EMB_USE_VEC_GLM
+#endif // EMB_USE_GLM
