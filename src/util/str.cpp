@@ -1,50 +1,44 @@
-#include "Helper/Str.h"
 #include <string> // string and wide string use
 #include <string_view>
-#include <vector>
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#include <stringapiset.h> // WideCharToMultiByte()
 
-namespace TE
-{
+#include "macros.h"
+#include "str.h"
+//#include <stringapiset.h> // WideCharToMultiByte()
+
+EMB_NAMESPACE_START
 
 //-------------------------------------------------------------------//
 //						  Wide-string conversions					 //
 //-------------------------------------------------------------------//
 
-/// <summary>
-/// Converts widestring into string
-/// </summary>
-/// <param name="wstr">The string to convert.</param>
-/// <param name="encoding">the type of encoding to be used in conversion.</param>
-/// <return>converted string</return>
-std::string Str_ConvertWstrToStr(std::wstring_view wstr)
-{
-    int count =
-        WideCharToMultiByte(CP_UTF8, 0, wstr.data(), (int)wstr.length(), NULL, 0, NULL, NULL);
-    std::string str(count, 0);
-    WideCharToMultiByte(CP_UTF8, 0, wstr.data(), -1, str.data(), count, NULL, NULL);
-    return str;
-}
+// /// <summary>
+// /// Converts widestring into string
+// /// </summary>
+// /// <param name="wstr">The string to convert.</param>
+// /// <param name="encoding">the type of encoding to be used in conversion.</param>
+// /// <return>converted string</return>
+// std::string Str_ConvertWstrToStr(std::wstring_view wstr)
+// {
+//     int count =
+//         WideCharToMultiByte(CP_UTF8, 0, wstr.data(), (int)wstr.length(), NULL, 0, NULL, NULL);
+//     std::string str(count, 0);
+//     WideCharToMultiByte(CP_UTF8, 0, wstr.data(), -1, str.data(), count, NULL, NULL);
+//     return str;
+// }
 
-/// <summary>
-/// Converts string into widestring
-/// </summary>
-/// <param name="str">The string to convert.</param>
-/// <param name="encoding">the type of encoding to be used in conversion.</param>
-/// <return>converted string</return>
-std::wstring Str_ConvertStrToWstr(std::string_view str)
-{
-    int count = MultiByteToWideChar(CP_UTF8, 0, str.data(), (int)str.length(), NULL, 0);
-    std::wstring wstr(count, 0);
-    MultiByteToWideChar(CP_UTF8, 0, str.data(), -1, wstr.data(), count);
-    return wstr;
-}
+// /// <summary>
+// /// Converts string into widestring
+// /// </summary>
+// /// <param name="str">The string to convert.</param>
+// /// <param name="encoding">the type of encoding to be used in conversion.</param>
+// /// <return>converted string</return>
+// std::wstring Str_ConvertStrToWstr(std::string_view str)
+// {
+//     int count = MultiByteToWideChar(CP_UTF8, 0, str.data(), (int)str.length(), NULL, 0);
+//     std::wstring wstr(count, 0);
+//     MultiByteToWideChar(CP_UTF8, 0, str.data(), -1, wstr.data(), count);
+//     return wstr;
+// }
 
 
 /// <summary>
@@ -256,46 +250,46 @@ std::string Str_TrimBack(std::string_view str, std::string_view charsToTrim)
     return std::string(str.substr(0, backpos + 1));
 }
 
-/// <summary>
-/// Splits a string container into a vector of strings, using the delimiters provided.
-/// Delimiters mark the spots where the string should be split.
-/// Delimiter characters will not show up in the split strings.
-/// </summary>
-/// <param name="toSplit">the string to be split.</param>
-/// <param name="delimiters">delimiter characters to use to mark where to split the string. can use multiple characters at once.</param>
-/// <returns>vector of strings that have been split.</returns>
-std::vector<std::string> Str_Split(std::string_view toSplit, std::string_view delimiters)
-{
-    std::vector<std::string> ret;
-    if (toSplit.empty() || delimiters.empty())
-        return ret;
+// /// <summary>
+// /// Splits a string container into a vector of strings, using the delimiters provided.
+// /// Delimiters mark the spots where the string should be split.
+// /// Delimiter characters will not show up in the split strings.
+// /// </summary>
+// /// <param name="toSplit">the string to be split.</param>
+// /// <param name="delimiters">delimiter characters to use to mark where to split the string. can use multiple characters at once.</param>
+// /// <returns>vector of strings that have been split.</returns>
+// std::vector<std::string> Str_Split(std::string_view toSplit, std::string_view delimiters)
+// {
+//     std::vector<std::string> ret;
+//     if (toSplit.empty() || delimiters.empty())
+//         return ret;
 
-    size_t currentPos = 0;
-    size_t nextDelim = toSplit.find_first_of(delimiters);
+//     size_t currentPos = 0;
+//     size_t nextDelim = toSplit.find_first_of(delimiters);
 
-    // Skip start trailing delims if any. set the start pos and next delim to the correct positions.
-    if (nextDelim == 0)
-    {
-        currentPos = toSplit.find_first_not_of(delimiters);
-        nextDelim = toSplit.find_first_of(delimiters, currentPos);
-    }
+//     // Skip start trailing delims if any. set the start pos and next delim to the correct positions.
+//     if (nextDelim == 0)
+//     {
+//         currentPos = toSplit.find_first_not_of(delimiters);
+//         nextDelim = toSplit.find_first_of(delimiters, currentPos);
+//     }
 
-    while (nextDelim != std::string::npos)
-    {
-        ret.emplace_back(toSplit.substr(currentPos, nextDelim - currentPos));
-        currentPos = toSplit.find_first_not_of(delimiters, nextDelim);
-        nextDelim = toSplit.find_first_of(delimiters, currentPos);
-    }
+//     while (nextDelim != std::string::npos)
+//     {
+//         ret.emplace_back(toSplit.substr(currentPos, nextDelim - currentPos));
+//         currentPos = toSplit.find_first_not_of(delimiters, nextDelim);
+//         nextDelim = toSplit.find_first_of(delimiters, currentPos);
+//     }
 
-    // Handle case where there is no trailing delim. nextDelim is npos, currentPos exists.
-    // pushback currentPos to end of string.
-    if (currentPos != std::string::npos && nextDelim == std::string::npos)
-    {
-        ret.emplace_back(toSplit.substr(currentPos, toSplit.size() - currentPos));
-    }
+//     // Handle case where there is no trailing delim. nextDelim is npos, currentPos exists.
+//     // pushback currentPos to end of string.
+//     if (currentPos != std::string::npos && nextDelim == std::string::npos)
+//     {
+//         ret.emplace_back(toSplit.substr(currentPos, toSplit.size() - currentPos));
+//     }
 
-    return ret;
-}
+//     return ret;
+// }
 /// <summary>
 /// Converts a string to upper case.
 /// </summary>
@@ -356,4 +350,5 @@ bool Str_EndsWith(std::string_view str, std::string_view endsWith)
     }
     return true;
 }
-} // namespace TE
+
+EMB_NAMESPACE_END

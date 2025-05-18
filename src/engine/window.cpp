@@ -1,19 +1,19 @@
+#include "engine/engine.h"
 #include "pch-engine.h"
 
-#include "window.h"
+#include <GLFW/glfw3.h>
 
 #include "util/defines.h"
 #include "util/types.h"
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
+#include "window.h"
 
 EMB_NAMESPACE_START
 
 // ========= Helper Macros =========
 
-#define EMB_CAST_TO_WINDOWPTR(windowHandle) \
-    (GLFWwindow*)windowHandle
+#define EMB_WINDOWPTR \
+    (GLFWwindow*)m_WindowHandle
 
 // ========= End Helper Macros =========
 
@@ -21,11 +21,24 @@ EMB_NAMESPACE_START
 
 void callbackError(int error, const char* description)
 {
-    std::cerr << "GLFW error: " << description << std::endl;
+    std::cerr << "GLFW error (code " << error << "): " << description << '\n';
 }
 
-void callbackFramebufferResize(GLFWwindow* window, int width, int height)
+void callbackWindowClosed(GLFWwindow*)
 {
+    Engine::Instance().SignalEngineStop();
+}
+
+void callbackWindowResized(GLFWwindow*, int width, int height)
+{
+    // Not to be confused with framebuffer size.
+    // window size is in SCREEN coordinates, not PIXELS.
+}
+
+void callbackFramebufferResized(GLFWwindow*, int width, int height)
+{
+    // In PIXELS, not SCREEN coordinates.
+    // glViewport takes in pixels.
     glViewport(0, 0, width, height);
 }
 
@@ -54,53 +67,66 @@ void WindowManager::Init()
     glfwWindowHint(GLFW_ALPHA_BITS, 8);
     //glfwWindowHint(GLFW_RESIZABLE, GL_FALSE); // window dimensions are static
 
-    m_WindowHandle = (embPtr)glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+    m_WindowHandle = (embPtr)glfwCreateWindow(800, 600, "EmberEngine", NULL, NULL);
     if (m_WindowHandle == nullptr)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
         exit(1);
     }
-    glfwMakeContextCurrent((GLFWwindow*)m_WindowHandle);
 
     // set callbacks
     glfwSetErrorCallback(callbackError);
-    // glfwSetFramebufferSizeCallback(GLHelper::ptr_window, GLHelper::fbsize_cb);
-    // glfwSetKeyCallback(GLHelper::ptr_window, GLHelper::key_cb);
-    // glfwSetMouseButtonCallback(GLHelper::ptr_window, GLHelper::mousebutton_cb);
-    // glfwSetCursorPosCallback(GLHelper::ptr_window, GLHelper::mousepos_cb);
-    // glfwSetScrollCallback(GLHelper::ptr_window, GLHelper::mousescroll_cb);
+    glfwSetWindowCloseCallback(EMB_WINDOWPTR, callbackWindowClosed);
+    //glfwSetWindowSizeCallback(EMB_WINDOWPTR, callbackWindowResized);
+    glfwSetFramebufferSizeCallback(EMB_WINDOWPTR, callbackFramebufferResized);
+    // glfwSetKeyCallback(EMB_WINDOWPTR, GLHelper::key_cb);
+    // glfwSetMouseButtonCallback(EMB_WINDOWPTR, GLHelper::mousebutton_cb);
+    // glfwSetCursorPosCallback(EMB_WINDOWPTR, GLHelper::mousepos_cb);
+    // glfwSetScrollCallback(EMB_WINDOWPTR, GLHelper::mousescroll_cb);
 
-    glewExperimental = TRUE;
-    GLenum err = glewInit();
-    if (GLEW_OK != err
-#ifdef EMB_PLATFORM_LINUX
-        // BUG WITH GLFW ON LINUX: https://github.com/nigels-com/glew/issues/417
-        // return code somehow returns 4 instead of 0 even if everything is ok.
-        && err != 4
-#endif
-    )
-    {
-        std::cerr << "Unable to initialize GLEW - error: "
-                  << glewGetErrorString(err) << "| Code: " << err << " | abort program" << std::endl;
-        exit(1);
-    }
+    // Other options
+    //glfwSetWindowSizeLimits(EMB_WINDOWPTR, 200, 200, 400, 400); // min/max size
+    glfwSetWindowAspectRatio(EMB_WINDOWPTR, 16, 9);
 }
 
 void WindowManager::Destroy()
 {
-    glfwDestroyWindow(EMB_CAST_TO_WINDOWPTR(m_WindowHandle));
+    glfwDestroyWindow(EMB_WINDOWPTR);
     glfwTerminate();
 }
 
-// void WindowManager::SetWindowTitle();
+void WindowManager::PollInputEvents() noexcept
+{
+    glfwPollEvents();
+}
 
-// void WindowManager::SetWindowSize(embU32 w, embU32 h) noexcept;
+void WindowManager::SetWindowTitle(embStrview strView) noexcept
+{
+    glfwSetWindowTitle(EMB_WINDOWPTR, strView.begin());
+}
+
+void WindowManager::SetWindowSize(embS32 w, embS32 h) noexcept
+{
+    glfwSetWindowSize(EMB_WINDOWPTR, w, h);
+}
 
 embCoordInt WindowManager::GetWindowSize() const noexcept
 {
     int width, height;
-    glfwGetWindowSize(EMB_CAST_TO_WINDOWPTR(m_WindowHandle), &width, &height);
+    glfwGetWindowSize(EMB_WINDOWPTR, &width, &height);
+    return embCoordInt(width, height);
+}
+
+void WindowManager::SetFramebufferSize(embS32 w, embS32 h) noexcept
+{
+    glViewport(0, 0, w, h);
+}
+
+embCoordInt WindowManager::GetFramebufferSize() const noexcept
+{
+    int width, height;
+    glfwGetFramebufferSize(EMB_WINDOWPTR, &width, &height);
     return embCoordInt(width, height);
 }
 
@@ -108,9 +134,23 @@ embPtr WindowManager::GetWindowHandle() const noexcept
 {
     return m_WindowHandle;
 }
+
 embBool WindowManager::GetWindowShouldClose() const noexcept
 {
-    return glfwWindowShouldClose(EMB_CAST_TO_WINDOWPTR(m_WindowHandle));
+    return glfwWindowShouldClose(EMB_WINDOWPTR);
+}
+
+void WindowManager::SetWindowIconified(embBool iconify)
+{
+    if (iconify == m_IsIconified)
+        return;
+
+    m_IsIconified = iconify;
+
+    if (iconify)
+        glfwIconifyWindow(EMB_WINDOWPTR);
+    else
+        glfwRestoreWindow(EMB_WINDOWPTR);
 }
 
 EMB_NAMESPACE_END

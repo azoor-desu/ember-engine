@@ -36,7 +36,7 @@ void Engine::Destroy() noexcept
 
 bool Engine::IsEngineRunning() const noexcept
 {
-    return m_IsEngineRunning && !WindowManager::Instance().GetWindowShouldClose();
+    return m_IsEngineRunning;
 }
 
 bool Engine::IsSimulationActive() const noexcept
@@ -47,6 +47,11 @@ bool Engine::IsSimulationActive() const noexcept
 void Engine::SetSimulationActive(embBool active) noexcept
 {
     m_IsSimulationActive = active;
+}
+
+void Engine::SignalEngineStop()
+{
+    m_IsEngineRunning = false;
 }
 
 EMB_NAMESPACE_END

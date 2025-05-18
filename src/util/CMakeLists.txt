@@ -12,4 +12,5 @@ target_sources(
         vec_utils.cpp
         matrix.cpp
         matrix_utils.cpp
+        str.cpp
 )

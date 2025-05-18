@@ -23,12 +23,14 @@ class Engine
     // Destroys all resources and exits.
     void Destroy() noexcept;
 
-    // Is the application running
+    // Is the application running. Should only be for timer use.
     bool IsEngineRunning() const noexcept;
     // Is the simulation currently running? Setting to false suspends simulation, and can be resumed later.
     bool IsSimulationActive() const noexcept;
     // Sets simulation to run or suspend.
     void SetSimulationActive(embBool active) noexcept;
+    // tells engine to stop running after this frame.
+    void SignalEngineStop();
 
   private:
     embBool m_IsEngineRunning = false;

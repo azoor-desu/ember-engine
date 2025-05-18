@@ -14,6 +14,9 @@ class Graphics
     void PreRender();
     void Render();
     void Destroy();
+
+    unsigned int VAO;
+    unsigned int shaderProgram;
 };
 
 EMB_NAMESPACE_END

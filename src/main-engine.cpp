@@ -46,11 +46,10 @@ int main()
     embCoordInt nnnn{3, 56};
     std::print("new boi is {}\n", nnnn);
 
-    //ImGUI::ShowDemoWindow();
-
     Engine& engine = Engine::Instance();
-    engine.Init();
     Timer& timer = Timer::Instance();
+
+    engine.Init();
     timer.SetSimTimeScale(1.f);
     timer.SetTargetSimRate(20);
     timer.SetTargetFramerate(20);

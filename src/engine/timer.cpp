@@ -140,14 +140,14 @@ embBool Timer::ShouldUpdate() noexcept
         m_LastFixedUpdateTime += m_TargetSimTime * m_SimStepCount;
     }
 
-    printf("real time %lf, dt: %f, fixeddt: %f, timescale %f, sim time %lf, sim count %u, interp: %f\n",
-           GetRealTimeElapsed(),
-           GetDT(),
-           GetFixedDT(),
-           GetSimTimeScale(),
-           GetSimTimeElapsed(),
-           ShouldFixedUpdate(),
-           GetFixedUpdateInterpAmount());
+    // printf("real time %lf, dt: %f, fixeddt: %f, timescale %f, sim time %lf, sim count %u, interp: %f\n",
+    //        GetRealTimeElapsed(),
+    //        GetDT(),
+    //        GetFixedDT(),
+    //        GetSimTimeScale(),
+    //        GetSimTimeElapsed(),
+    //        ShouldFixedUpdate(),
+    //        GetFixedUpdateInterpAmount());
 
     return true;
 }

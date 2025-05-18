@@ -1,9 +1,9 @@
 #pragma once
 
 #include "defines.h"
+#include "types.h"
 #include <string>
 #include <string_view>
-#include <vector>
 
 EMB_NAMESPACE_START
 
@@ -25,7 +25,7 @@ constexpr std::string_view WHITESPACE_CHARS = " \f\n\r\t\v";
 /// <param name="wstr">The string to convert.</param>
 /// <param name="encoding">the type of encoding to be used in conversion.</param>
 /// <return>converted string</return>
-std::string Str_ConvertWstrToStr(std::wstring_view wstr);
+//std::string Str_ConvertWstrToStr(std::wstring_view wstr);
 
 /// <summary>
 /// Converts string into widestring
@@ -33,7 +33,7 @@ std::string Str_ConvertWstrToStr(std::wstring_view wstr);
 /// <param name="str">The string to convert.</param>
 /// <param name="encoding">the type of encoding to be used in conversion.</param>
 /// <return>converted string</return>
-std::wstring Str_ConvertStrToWstr(std::string_view str);
+//std::wstring Str_ConvertStrToWstr(std::string_view str);
 
 /// <summary>
 /// replaces all instances of a certain substring "toReplace" with another substring "replaceWith" in the string "toModify".
@@ -110,7 +110,7 @@ std::string Str_TrimBack(std::string_view str, std::string_view charsToTrim = WH
 /// <param name="toSplit">the string to be split.</param>
 /// <param name="delimiters">delimiter characters to use to mark where to split the string. can use multiple characters at once.</param>
 /// <returns>vector of strings that have been split.</returns>
-std::vector<std::string> Str_Split(std::string_view toSplit, std::string_view delimiters = " ");
+//std::vector<std::string> Str_Split(std::string_view toSplit, std::string_view delimiters = " ");
 
 /// <summary>
 /// Converts a string to upper case.
