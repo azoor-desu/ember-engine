@@ -112,6 +112,13 @@ target_compile_definitions(MainExe PRIVATE EMB_USE_GLM)
 #target_compile_definitions(MainExe PRIVATE EMB_USE_VULKAN)
 #target_compile_definitions(MainExe PRIVATE EMB_USE_OPENGL)
 
+# enable address sanitizer (memleak check)
+if (CMAKE_BUILD_TYPE MATCHES "Debug")
+    add_compile_options(-fsanitize=address -fno-omit-frame-pointer -O1) # memleak check
+    target_link_libraries(EngineLib PUBLIC asan)
+    target_link_libraries(MainExe PUBLIC asan)
+endif()
+
 # ======================== END CREATE TARGETS ========================
 
 # ======================== START TARGET SOURCES ========================
@@ -159,6 +166,7 @@ target_link_libraries(
     PUBLIC
         EngineLib
 )
+
 # ======================== END LINKING ========================
 
 

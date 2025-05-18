@@ -155,6 +155,14 @@ void Graphics::Render()
 
 void Graphics::Destroy()
 {
+    glDeleteProgram(shaderProgram);
 }
 
 EMB_NAMESPACE_END
+
+// TODO:
+// Implement textures before proceeding further!!!
+// Implement UBOs
+// implement shader loading and management (maybe via resource manager)
+// Implement model loading and management (sort by VAOs, shaders seperately)
+// Implement instancing
