@@ -97,17 +97,11 @@ void WindowManager::Destroy()
 
 // void WindowManager::SetWindowSize(embU32 w, embU32 h) noexcept;
 
-embU32 WindowManager::GetWindowWidth() const noexcept
+embCoordInt WindowManager::GetWindowSize() const noexcept
 {
     int width, height;
     glfwGetWindowSize(EMB_CAST_TO_WINDOWPTR(m_WindowHandle), &width, &height);
-    return width;
-}
-
-embU32 WindowManager::GetWindowHeight() const noexcept
-{
-    int width, height;
-    glfwGetWindowSize(EMB_CAST_TO_WINDOWPTR(m_WindowHandle), &width, &height);
+    return embCoordInt(width, height);
 }
 
 embPtr WindowManager::GetWindowHandle() const noexcept

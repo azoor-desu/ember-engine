@@ -2,6 +2,7 @@
 
 #include "util/defines.h"
 #include "util/types.h"
+#include "util/vec2_coord_container.h"
 
 EMB_NAMESPACE_START
 
@@ -18,8 +19,7 @@ class WindowManager
     //void CreateWindow();
     void SetWindowTitle();
     void SetWindowSize(embU32 w, embU32 h) noexcept;
-    embU32 GetWindowWidth() const noexcept;
-    embU32 GetWindowHeight() const noexcept;
+    embCoordInt GetWindowSize() const noexcept;
     embPtr GetWindowHandle() const noexcept;
     embBool GetWindowShouldClose() const noexcept;
 
