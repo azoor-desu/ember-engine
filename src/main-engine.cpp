@@ -1,9 +1,10 @@
 #include "pch-engine.h"
 
+#include "util/matrix.h"
 #include "util/matrix_utils.h"
-#include "util/matrix_wrapper_glm.h"
 #include "util/types.h"
 #include "util/vec.h"
+#include "util/vec2_coord_container.h"
 #include "util/vec_utils.h"
 
 #include "engine/engine.h"
@@ -42,6 +43,8 @@ int main()
 
     std::print("hoho is {}\n", hoho1);
 
+    embCoordInt nnnn{3, 56};
+    std::print("new boi is {}\n", nnnn);
 
     //ImGUI::ShowDemoWindow();
 
@@ -50,7 +53,7 @@ int main()
     Timer timer = Timer::Instance();
     timer.SetSimTimeScale(1.f);
     timer.SetTargetSimRate(20);
-    timer.SetTargetFramerate(30);
+    timer.SetTargetFramerate(20);
 
     while (engine.IsEngineRunning())
     {

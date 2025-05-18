@@ -17,7 +17,3 @@
 #ifndef UNUSED
 #define UNUSED(P) (P)
 #endif
-
-// Toggles
-
-#define EMB_DEBUG_LEVEL 5

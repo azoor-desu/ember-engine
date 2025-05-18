@@ -15,14 +15,16 @@ class WindowManager
 
     void PollInputEvents() noexcept;
 
-    void CreateWindow();
+    //void CreateWindow();
     void SetWindowTitle();
-    void SetWindowSize() noexcept;
-    void GetWindowSize() const noexcept;
-    embPtr* GetWindowHandle() const noexcept;
+    void SetWindowSize(embU32 w, embU32 h) noexcept;
+    embU32 GetWindowWidth() const noexcept;
+    embU32 GetWindowHeight() const noexcept;
+    embPtr GetWindowHandle() const noexcept;
+    embBool GetWindowShouldClose() const noexcept;
 
   private:
-    embPtr* m_WindowHandle = nullptr;
+    embPtr m_WindowHandle = nullptr;
 };
 
 EMB_NAMESPACE_END

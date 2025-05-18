@@ -97,6 +97,18 @@ elseif(PLATFORM_TYPE MATCHES Windows)
     target_compile_definitions(MainExe PRIVATE EMB_PLATFORM_WINDOWS)
 endif()
 
+if (CMAKE_BUILD_TYPE MATCHES "Debug" OR CMAKE_BUILD_TYPE MATCHES "Release With Debug Info")
+    target_compile_definitions(EngineLib PRIVATE EMB_DEBUG)
+    target_compile_definitions(MainExe PRIVATE EMB_DEBUG)
+else()
+    target_compile_definitions(EngineLib PRIVATE EMB_RELEASE)
+    target_compile_definitions(MainExe PRIVATE EMB_RELEASE)
+endif()
+
+target_compile_definitions(UtilsLib PRIVATE EMB_USE_VEC_GLM)
+target_compile_definitions(EngineLib PRIVATE EMB_USE_VEC_GLM)
+target_compile_definitions(MainExe PRIVATE EMB_USE_VEC_GLM)
+
 #target_compile_definitions(MainExe PRIVATE EMB_USE_VULKAN)
 #target_compile_definitions(MainExe PRIVATE EMB_USE_OPENGL)
 

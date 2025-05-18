@@ -26,4 +26,5 @@ void Graphics::Render()
 void Graphics::Destroy()
 {
 }
+
 EMB_NAMESPACE_END

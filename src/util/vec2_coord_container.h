@@ -1,4 +1,5 @@
 #pragma once
+// A SMALLER CONTAINER JUST FOR VEC 2s
 
 #include "types.h"
 
@@ -16,14 +17,8 @@
 #include "vec_macros.h"
 #include "wrapper_glm_common.h"
 
-#include <glm/geometric.hpp> // all the GLSL geometry functions: dot, cross, reflect, etc.
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-
-#include <glm/common.hpp> // all the GLSL common functions: abs, min, mix, isnan, fma, etc.
-#include <glm/exponential.hpp> // all the GLSL exponential functions: pow, log, exp2, sqrt, etc.
-#include <glm/trigonometric.hpp> // all the GLSL trigonometric functions: radians, cos, asin, etc.
+#include "glm/ext/vector_float2.hpp"
+#include "glm/ext/vector_int2.hpp"
 
 EMB_NAMESPACE_START
 
@@ -40,13 +35,13 @@ EMB_NAMESPACE_END
 // https://arne-mertz.de/2019/02/extern-template-reduce-compile-times/
 
 // Declare all template externs, defines found in .cpp file.
-EMB_NAMESPACE_START
-using embVec2 = ember::embVec<2, ember::embF32>;
-using embVec3 = ember::embVec<3, ember::embF32>;
-using embVec4 = ember::embVec<4, ember::embF32>;
-EMB_NAMESPACE_END
+EMB_DECLARE_VEC_TYPE(2, ember::embS32, S32)
+EMB_DECLARE_VEC_TYPE(2, ember::embF32, F32)
 
-EMB_DECLARE_VEC_TYPE_ALL(ember::embF32, F)
-EMB_DECLARE_VEC_TYPE_ALL(ember::embF64, F64)
+// Additional container names
+EMB_NAMESPACE_START
+using embCoordInt = math::vec<2, ember::embS32>;
+using embCoord = math::vec<2, ember::embF32>;
+EMB_NAMESPACE_END
 
 #endif // EMB_USE_VEC_GLM

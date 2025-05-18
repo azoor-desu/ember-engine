@@ -36,7 +36,7 @@ void Engine::Destroy() noexcept
 
 bool Engine::IsEngineRunning() const noexcept
 {
-    return m_IsEngineRunning;
+    return m_IsEngineRunning && !WindowManager::Instance().GetWindowShouldClose();
 }
 
 bool Engine::IsSimulationActive() const noexcept

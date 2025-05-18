@@ -7,8 +7,9 @@
 target_sources(
     UtilsLib
     PRIVATE
-        vec_wrapper_glm.cpp 
+        vec.cpp
+        vec2_coord_container.cpp
         vec_utils.cpp
-        matrix_wrapper_glm.cpp
+        matrix.cpp
         matrix_utils.cpp
 )

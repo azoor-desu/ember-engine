@@ -1,4 +1,4 @@
-#include "vec_wrapper_glm.h"
+#include "vec.h"
 // compile optim
 // https://arne-mertz.de/2019/02/extern-template-reduce-compile-times/
 

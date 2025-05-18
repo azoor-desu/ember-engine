@@ -1,6 +1,7 @@
 #pragma once
 
 #include "defines.h"
+#include <bitset> // for bitmask
 #include <cstddef>
 #include <cstdint> // for int types
 #include <limits> // for numeric_limits
@@ -16,18 +17,22 @@ using embLChar = char16_t;
 // UTF-16/32, system preferred. usually 16 on other platforms, 32 on Linux.
 using embWChar = wchar_t;
 
+// TODO: CUSTOM CLASS FOR BITMASK, OR USE STD BITSET.
+template<int T>
+using embBitmask = std::bitset<T>;
 // 8-bit bitmask for bit operations
-using embBitmask8 = uint8_t;
+using embBitmask8 = std::bitset<8>;
 // 16-bit bitmask for bit operations
-using embBitmask16 = uint16_t;
+using embBitmask16 = std::bitset<16>;
 // 32-bit bitmask for bit operations
-using embBitmask32 = uint32_t;
+using embBitmask32 = std::bitset<32>;
 // 64-bit bitmask for bit operations
-using embBitmask64 = uint64_t;
+using embBitmask64 = std::bitset<64>;
 
-// Generic pointer type
 // Size of memory address space, usually 64bit.
-using embPtr = std::size_t;
+using embSizeType = std::size_t;
+// Generic pointer type. Do not use directly, cast to something else first.
+using embPtr = embSizeType*;
 
 // 8-bits, 1 byte, signed
 using embS8 = int8_t;

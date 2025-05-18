@@ -10,10 +10,26 @@
 
 EMB_NAMESPACE_START
 
-void error_cb(int error, const char* description)
+// ========= Helper Macros =========
+
+#define EMB_CAST_TO_WINDOWPTR(windowHandle) \
+    (GLFWwindow*)windowHandle
+
+// ========= End Helper Macros =========
+
+// ========= Callback Events =========
+
+void callbackError(int error, const char* description)
 {
     std::cerr << "GLFW error: " << description << std::endl;
 }
+
+void callbackFramebufferResize(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+}
+
+// ========= End Callback Events =========
 
 void WindowManager::Init()
 {
@@ -30,6 +46,7 @@ void WindowManager::Init()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
+    glfwWindowHint(GLFW_REFRESH_RATE, GLFW_DONT_CARE);
     glfwWindowHint(GLFW_FOCUS_ON_SHOW, GLFW_TRUE);
     glfwWindowHint(GLFW_RED_BITS, 8);
     glfwWindowHint(GLFW_GREEN_BITS, 8);
@@ -37,7 +54,7 @@ void WindowManager::Init()
     glfwWindowHint(GLFW_ALPHA_BITS, 8);
     //glfwWindowHint(GLFW_RESIZABLE, GL_FALSE); // window dimensions are static
 
-    m_WindowHandle = (embPtr*)glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
+    m_WindowHandle = (embPtr)glfwCreateWindow(800, 600, "LearnOpenGL", NULL, NULL);
     if (m_WindowHandle == nullptr)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -47,7 +64,7 @@ void WindowManager::Init()
     glfwMakeContextCurrent((GLFWwindow*)m_WindowHandle);
 
     // set callbacks
-    glfwSetErrorCallback(error_cb);
+    glfwSetErrorCallback(callbackError);
     // glfwSetFramebufferSizeCallback(GLHelper::ptr_window, GLHelper::fbsize_cb);
     // glfwSetKeyCallback(GLHelper::ptr_window, GLHelper::key_cb);
     // glfwSetMouseButtonCallback(GLHelper::ptr_window, GLHelper::mousebutton_cb);
@@ -70,14 +87,36 @@ void WindowManager::Init()
     }
 }
 
-embPtr* WindowManager::GetWindowHandle() const noexcept
+void WindowManager::Destroy()
+{
+    glfwDestroyWindow(EMB_CAST_TO_WINDOWPTR(m_WindowHandle));
+    glfwTerminate();
+}
+
+// void WindowManager::SetWindowTitle();
+
+// void WindowManager::SetWindowSize(embU32 w, embU32 h) noexcept;
+
+embU32 WindowManager::GetWindowWidth() const noexcept
+{
+    int width, height;
+    glfwGetWindowSize(EMB_CAST_TO_WINDOWPTR(m_WindowHandle), &width, &height);
+    return width;
+}
+
+embU32 WindowManager::GetWindowHeight() const noexcept
+{
+    int width, height;
+    glfwGetWindowSize(EMB_CAST_TO_WINDOWPTR(m_WindowHandle), &width, &height);
+}
+
+embPtr WindowManager::GetWindowHandle() const noexcept
 {
     return m_WindowHandle;
 }
-
-void WindowManager::Destroy()
+embBool WindowManager::GetWindowShouldClose() const noexcept
 {
-    glfwTerminate();
+    return glfwWindowShouldClose(EMB_CAST_TO_WINDOWPTR(m_WindowHandle));
 }
 
 EMB_NAMESPACE_END
