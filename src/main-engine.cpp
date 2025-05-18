@@ -48,15 +48,16 @@ int main()
 
     //ImGUI::ShowDemoWindow();
 
-    ember::Engine engine;
+    Engine& engine = Engine::Instance();
     engine.Init();
-    Timer timer = Timer::Instance();
+    Timer& timer = Timer::Instance();
     timer.SetSimTimeScale(1.f);
     timer.SetTargetSimRate(20);
     timer.SetTargetFramerate(20);
 
     while (engine.IsEngineRunning())
     {
+
         if (timer.ShouldUpdate())
         {
             engine.Update();
