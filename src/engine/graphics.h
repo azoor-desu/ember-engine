@@ -16,6 +16,7 @@ class Graphics
     void Destroy();
 
     unsigned int VAO;
+    unsigned int EBO;
     unsigned int shaderProgram;
 };
 

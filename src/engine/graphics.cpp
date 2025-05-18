@@ -92,27 +92,38 @@ void Graphics::Init()
 
     // Load models
     float vertices[] = {
-        -0.5f, -0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f};
+        0.5f, 0.5f, 0.0f,  // top right
+        0.5f, -0.5f, 0.0f,  // bottom right
+        -0.5f, -0.5f, 0.0f,  // bottom left
+        -0.5f, 0.5f, 0.0f   // top left
+    };
+    unsigned int indices[] = {
+        0, 1, 3,   // first triangle
+        1, 2, 3    // second triangle
+    };
 
-    // Create VAO to store all of the below configs:
-    // VBO + all of the attributes and settings
-    // One VAO can only be associated with one VBO.
-
+    // Create VAO to store all of the below configs
+    // VAO stores: VBO/EBO BINDINGS, glVertexAttribPointer, glEnableVertexAttribArray.
+    // One VAO can only be associated with one VBO+EBO.
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO); // bind it to bring VAO into focus, takes all of the settings below.
 
     // Create VBO that stores a buffer of vertices (for one object)
     unsigned int VBO;
     glGenBuffers(1, &VBO); // alloc buffer
-    glBindBuffer(GL_ARRAY_BUFFER, VBO); // bring buffer into focus
+    glBindBuffer(GL_ARRAY_BUFFER, VBO); // bring buffer into focus. Also binds to VAO.
     // GL_STREAM_DRAW: the data is set only once and used by the GPU at most a few times.
     // GL_STATIC_DRAW: the data is set only once and used many times.
     // GL_DYNAMIC_DRAW: the data is changed a lot and used many times.
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // load data into focused buffer
 
-    // Specify a layout of how to inpterpret a vertex buffer (vertex attribute), and save it to slot 0 (attribute 0)
+    // Create a EBO.
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); // bring buffer into focus. Also binds to VAO.
+    // load data into buffer.
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    // Specify a layout of how to inpterpret a VBO (vertex attribute), and save it to slot 0 (attribute 0)
     // e.g. [xyz][xyz][xyz]...
     // Is associated with the current VBO in focus (binded).
     // Corresponds to GLSL's vertex shader layout.
@@ -131,10 +142,12 @@ void Graphics::Render()
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
+    // temp testing.
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
     glUseProgram(shaderProgram);
     glBindVertexArray(VAO);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     glfwSwapBuffers((GLFWwindow*)WindowManager::Instance().GetWindowHandle());
     WindowManager::Instance().PollInputEvents();
