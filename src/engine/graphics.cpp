@@ -123,7 +123,7 @@ void Graphics::Init()
     // load data into buffer.
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    // Specify a layout of how to inpterpret a VBO (vertex attribute), and save it to slot 0 (attribute 0)
+    // Specify a layout of how to interpret a VBO (vertex attribute), and save it to slot 0 (attribute 0)
     // e.g. [xyz][xyz][xyz]...
     // Is associated with the current VBO in focus (binded).
     // Corresponds to GLSL's vertex shader layout.
@@ -163,6 +163,7 @@ EMB_NAMESPACE_END
 // TODO:
 // Implement textures before proceeding further!!!
 // Implement UBOs
+// Look into SSBOs
 // implement shader loading and management (maybe via resource manager)
-// Implement model loading and management (sort by VAOs, shaders seperately)
+// Implement model loading and management (sort by VAOs, shaders separately)
 // Implement instancing

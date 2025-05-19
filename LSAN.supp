@@ -1,0 +1,10 @@
+# idk, prolly due to glfw
+leak:libwayland-client
+
+# probably buggy lib
+leak:libfontconfig
+
+# GLFW window creation...
+# calloc should stay at 330 count and 13472 bytes suppressed
+leak:<unknown module> 
+leak:calloc

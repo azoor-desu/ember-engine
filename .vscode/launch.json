@@ -4,21 +4,20 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+        
         {
-            "name": "Debug-Editor",
+            "name": "Debug",
             "type": "gdb",
             "request": "launch",
-            "target": "./EmberEditor-Debug.out",
+            "target": "${command:cmake.launchTargetPath}",
             "cwd": "${workspaceRoot}",
-            "valuesFormatting": "parseText"
-        },
-        {
-            "name": "Debug-Engine",
-            "type": "gdb",
-            "request": "launch",
-            "target": "./EmberEngine-Debug.out",
-            "cwd": "${workspaceRoot}",
-            "valuesFormatting": "parseText"
+            "valuesFormatting": "parseText",
+            "env": // DOES NOT WORK, plus can't use ASan with gdb anyway...
+            { 
+                "ASAN_SYMBOLIZER_PATH": "/usr/local/bin/llvm-symbolizer",
+                "LSAN_OPTIONS": "suppressions=LSAN.supp" 
+            },
+            "internalConsoleOptions": "openOnSessionStart",
         }
     ]
 }

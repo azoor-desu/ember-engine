@@ -114,7 +114,7 @@ target_compile_definitions(MainExe PRIVATE EMB_USE_GLM)
 
 # enable address sanitizer (memleak check)
 if (CMAKE_BUILD_TYPE MATCHES "Debug")
-    add_compile_options(-fsanitize=address -fno-omit-frame-pointer -O1) # memleak check
+    add_compile_options(-fsanitize=address -fsanitize=undefined -fno-omit-frame-pointer -O1) # memleak check
     target_link_libraries(EngineLib PUBLIC asan)
     target_link_libraries(MainExe PUBLIC asan)
 endif()
