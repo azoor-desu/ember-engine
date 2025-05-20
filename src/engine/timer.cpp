@@ -5,6 +5,11 @@
 
 EMB_NAMESPACE_START
 
+Timer::Timer() noexcept
+{
+    ResetTimer();
+}
+
 void Timer::SetTargetFramerate(embU32 targetFPS) noexcept
 {
     if (targetFPS <= 0)
@@ -77,7 +82,7 @@ embF32 Timer::GetSimTimeScale() const noexcept
     return m_TimeScale;
 }
 
-embBool Timer::ShouldUpdate() noexcept
+embBool Timer::ShouldUpdate(embBool simActive) noexcept
 {
     // How work:
     // Engine constantly checks if is able to update. If yes, run update, and fixed update if possible too.
@@ -107,7 +112,8 @@ embBool Timer::ShouldUpdate() noexcept
     // When time scaled, the number of fixed steps increase/decrease
     //      > Implication: If slow down, lesser steps are taken, making workload lighter. If increase, more steps are taken, increasing workload.
     //      > Speeding up time implies can imply that physics sims can happen multiple times per frame if cranked up too high.
-    m_SimTimeElapsed += m_DT * m_TimeScale;
+    if (simActive)
+        m_SimTimeElapsed += m_DT * m_TimeScale;
 
     // Perform sim if any
     m_SimStepCount = 0; // reset step count for frame
@@ -160,6 +166,17 @@ embU32 Timer::ShouldFixedUpdate() const noexcept
 embF32 Timer::GetFixedUpdateInterpAmount() const noexcept
 {
     return 1.0f - ((embF32)(m_LastFixedUpdateTime - m_SimTimeElapsed) / (embF32)m_TargetSimTime);
+}
+
+void Timer::ResetTimer() noexcept
+{
+    m_LastUpdateTimePointEpoch = Clock::now().time_since_epoch().count();
+    m_AppStartTimePoint = Clock::now().time_since_epoch().count();
+    m_SimTimeElapsed = 0;
+    m_RealTimeElapsed = 0;
+    m_LastFixedUpdateTime = 0;
+    m_TimeScale = 1.0f;
+    m_SimStepCount = 0;
 }
 
 EMB_NAMESPACE_END

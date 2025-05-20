@@ -1,5 +1,6 @@
 #include "pch-engine.h"
 
+#include "util/bitset.h"
 #include "util/matrix.h"
 #include "util/matrix_utils.h"
 #include "util/types.h"
@@ -46,10 +47,13 @@ int main()
     embCoordInt nnnn{3, 56};
     std::print("new boi is {}\n", nnnn);
 
+    embBitset<64> bbbbb;
+
     Engine& engine = Engine::Instance();
     Timer& timer = Timer::Instance();
 
     engine.Init();
+    engine.SetSimulationActive(true); // leave it on true to keep running
     timer.SetSimTimeScale(1.f);
     timer.SetTargetSimRate(20);
     timer.SetTargetFramerate(20);
@@ -57,7 +61,7 @@ int main()
     while (engine.IsEngineRunning())
     {
 
-        if (timer.ShouldUpdate())
+        if (timer.ShouldUpdate(engine.IsSimulationActive()))
         {
             engine.Update();
             engine.Render();

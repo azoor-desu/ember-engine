@@ -18,10 +18,10 @@ class Timer
 
     EMB_CLASS_SINGLETON_MACRO(Timer)
 
-    Timer() : m_LastUpdateTimePointEpoch{Clock::now().time_since_epoch().count()}, m_AppStartTimePoint{Clock::now().time_since_epoch().count()} {};
+    Timer() noexcept;
 
     // Run in a while loop to constantly check if engine should update at this moment in time.
-    embBool ShouldUpdate() noexcept;
+    embBool ShouldUpdate(embBool simActive) noexcept;
     // Run with every engine update to check if Fixed update needs to happen or not this frame.
     // Returns the number of fixed updates to carry out for this frame (if updates were missed)
     embU32 ShouldFixedUpdate() const noexcept;
@@ -46,6 +46,9 @@ class Timer
     void SetSimTimeScale(embF32 timeScale) noexcept;
     embF32 GetSimTimeScale() const noexcept;
 
+    // Reset timer to start state.
+    void ResetTimer() noexcept;
+
   private:
     ClockDurationType m_DT = 0; // time since last update
     ClockDurationType m_SimTimeElapsed = 0; // time elapsed in simulation, affected by time scale.
@@ -56,7 +59,7 @@ class Timer
 
     ClockDurationType m_LastUpdateTimePointEpoch; // last saved time point since last frame update.
     ClockDurationType m_LastFixedUpdateTime = 0; // last updated time of fixed update, to be incremented in fixed steps. Should be "in the future"
-    const ClockDurationType m_AppStartTimePoint; // time that the application started
+    ClockDurationType m_AppStartTimePoint; // time that the application started
 
     embF32 m_TimeScale = 1.0f;
     embU32 m_SimStepCount = 0; // number of sim steps to do for this frame
