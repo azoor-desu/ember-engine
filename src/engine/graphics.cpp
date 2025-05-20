@@ -143,7 +143,7 @@ void Graphics::Render()
     glClear(GL_COLOR_BUFFER_BIT);
 
     // temp testing.
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     glUseProgram(shaderProgram);
     glBindVertexArray(VAO);

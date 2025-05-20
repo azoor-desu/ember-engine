@@ -1,12 +1,14 @@
 #include "pch-engine.h"
 
 #include "util/bitset.h"
+#include "util/hash.h"
 #include "util/matrix.h"
 #include "util/matrix_utils.h"
 #include "util/types.h"
 #include "util/vec.h"
 #include "util/vec2_coord_container.h"
 #include "util/vec_utils.h"
+
 
 #include "engine/engine.h"
 #include "engine/timer.h"
@@ -48,6 +50,8 @@ int main()
     std::print("new boi is {}\n", nnnn);
 
     embBitset<64> bbbbb;
+
+    std::print("I HAVE A HASH {} AND A guid {}\n", Hash::GenerateHash("ss"), Hash::GenerateGUID());
 
     Engine& engine = Engine::Instance();
     Timer& timer = Timer::Instance();

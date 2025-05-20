@@ -17,7 +17,7 @@ class WindowManager
 
     void PollInputEvents() noexcept;
 
-    void SetWindowTitle(embStrview strView) noexcept;
+    void SetWindowTitle(embStrView strView) noexcept;
 
     void SetWindowSize(embS32 w, embS32 h) noexcept;
     embCoordInt GetWindowSize() const noexcept;
@@ -25,14 +25,14 @@ class WindowManager
     void SetFramebufferSize(embS32 w, embS32 h) noexcept;
     embCoordInt GetFramebufferSize() const noexcept;
 
-    embPtr GetWindowHandle() const noexcept;
+    embGenericPtr GetWindowHandle() const noexcept;
     embBool GetWindowShouldClose() const noexcept;
 
     void SetWindowIconified(embBool iconify);
     void MaximizeWindow();
 
   private:
-    embPtr m_WindowHandle = nullptr;
+    embGenericPtr m_WindowHandle = nullptr;
     embBool m_IsIconified = false;
 };
 

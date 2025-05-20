@@ -13,4 +13,5 @@ target_sources(
         matrix.cpp
         matrix_utils.cpp
         str.cpp
+        hash.cpp
 )

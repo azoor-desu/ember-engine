@@ -67,7 +67,7 @@ void WindowManager::Init()
     glfwWindowHint(GLFW_ALPHA_BITS, 8);
     //glfwWindowHint(GLFW_RESIZABLE, GL_FALSE); // window dimensions are static
 
-    m_WindowHandle = (embPtr)glfwCreateWindow(800, 600, "EmberEngine", NULL, NULL);
+    m_WindowHandle = (embGenericPtr)glfwCreateWindow(800, 600, "EmberEngine", NULL, NULL);
     if (m_WindowHandle == nullptr)
     {
         std::cout << "Failed to create GLFW window" << std::endl;
@@ -101,7 +101,7 @@ void WindowManager::PollInputEvents() noexcept
     glfwPollEvents();
 }
 
-void WindowManager::SetWindowTitle(embStrview strView) noexcept
+void WindowManager::SetWindowTitle(embStrView strView) noexcept
 {
     glfwSetWindowTitle(EMB_WINDOWPTR, strView.begin());
 }
@@ -130,7 +130,7 @@ embCoordInt WindowManager::GetFramebufferSize() const noexcept
     return embCoordInt(width, height);
 }
 
-embPtr WindowManager::GetWindowHandle() const noexcept
+embGenericPtr WindowManager::GetWindowHandle() const noexcept
 {
     return m_WindowHandle;
 }

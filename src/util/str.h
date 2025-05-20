@@ -10,7 +10,7 @@ EMB_NAMESPACE_START
 // strings and stuff
 using embStr = std::string;
 using embWstr = std::wstring;
-using embStrview = std::string_view;
+using embStrView = std::string_view;
 
 namespace TE
 {

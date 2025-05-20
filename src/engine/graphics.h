@@ -15,6 +15,9 @@ class Graphics
     void Render();
     void Destroy();
 
+    void CompileShader();
+    void CompileShaderProgram();
+
     unsigned int VAO;
     unsigned int EBO;
     unsigned int shaderProgram;
