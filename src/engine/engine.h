@@ -26,7 +26,10 @@ class Engine
     // Is the application running. Should only be for timer use.
     bool IsEngineRunning() const noexcept;
 
-    // TODO FIND A BETTER NAME FOR THESE
+    // TODO FIND A BETTER NAME FOR THESE. One is for toggling sim on engine level (for editor use), and another is for
+    // toggling sim temporarily in-game in between loading and stuff. If combine both, and we pause sim in-game, editor might pull this
+    // value and exit the sim, not good.
+
     // Is the simulation currently running? Not intended to be turned off in the middle of game, used by editor.
     bool IsSimulationActive() const noexcept;
     // Sets simulation to run or suspend.

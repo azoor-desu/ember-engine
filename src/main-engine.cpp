@@ -9,7 +9,6 @@
 #include "util/vec2_coord_container.h"
 #include "util/vec_utils.h"
 
-
 #include "engine/engine.h"
 #include "engine/timer.h"
 
@@ -52,6 +51,8 @@ int main()
     embBitset<64> bbbbb;
 
     std::print("I HAVE A HASH {} AND A guid {}\n", Hash::GenerateHash("ss"), Hash::GenerateGUID());
+    std::print("Hash of int {} and embS32 {} \n", Hash::GetTypeHash<int>(), Hash::GetTypeHash<const embS32>());
+    //std::print("id of type float is {}", LookupTypeID(Hash::GetTypeHash<float>()));
 
     Engine& engine = Engine::Instance();
     Timer& timer = Timer::Instance();

@@ -1,10 +1,12 @@
+# define all keywords/lib names/func names to exclude from mem leak detection
+
 # idk, prolly due to glfw
 leak:libwayland-client
 
-# probably buggy lib
+# probably buggy lib, due to glfw
 leak:libfontconfig
 
-# GLFW window creation...
+# more random leaks from GLFW window creation...
 # calloc should stay at 330 count and 13472 bytes suppressed
 leak:<unknown module> 
 leak:calloc
