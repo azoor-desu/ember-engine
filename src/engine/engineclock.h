@@ -8,7 +8,7 @@
 
 EMB_NAMESPACE_START
 
-class Timer
+class EngineClock
 {
   public:
     using Clock = std::chrono::high_resolution_clock;  // the thing to pull timings from
@@ -16,9 +16,9 @@ class Timer
     using ClockDurationType = ClockDuration::rep; // the underlying type of the value stored in the clock.
     using ClockTimePoint = Clock::time_point; // the time pulled from the Clock.
 
-    EMB_CLASS_SINGLETON_MACRO(Timer)
+    EMB_CLASS_SINGLETON_MACRO(EngineClock)
 
-    Timer() noexcept;
+    EngineClock() noexcept;
 
     // Run in a while loop to constantly check if engine should update at this moment in time.
     embBool ShouldUpdate(embBool simActive) noexcept;

@@ -4,13 +4,16 @@
 #include "util/hash.h"
 #include "util/matrix.h"
 #include "util/matrix_utils.h"
+#include "util/str.h"
 #include "util/types.h"
 #include "util/vec.h"
 #include "util/vec2_coord_container.h"
 #include "util/vec_utils.h"
 
 #include "engine/engine.h"
-#include "engine/timer.h"
+#include "engine/engineclock.h"
+
+#include "util/str.h"
 
 int main()
 {
@@ -55,7 +58,7 @@ int main()
     //std::print("id of type float is {}", LookupTypeID(Hash::GetTypeHash<float>()));
 
     Engine& engine = Engine::Instance();
-    Timer& timer = Timer::Instance();
+    EngineClock& timer = EngineClock::Instance();
 
     engine.Init();
     engine.SetSimulationActive(true); // leave it on true to keep running
@@ -65,7 +68,6 @@ int main()
 
     while (engine.IsEngineRunning())
     {
-
         if (timer.ShouldUpdate(engine.IsSimulationActive()))
         {
             engine.Update();

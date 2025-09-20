@@ -1,4 +1,4 @@
-#include "engine/timer.h"
+#include "engine/engineclock.h"
 #include "pch-engine.h"
 
 #include <GLFW/glfw3.h>
@@ -19,7 +19,7 @@ void Engine::Init()
     WindowManager::Instance().Init();
     Graphics::Instance().Init();
 
-    Timer::Instance().ResetTimer(); // avoid the "skipping tick" warning due to long startup
+    EngineClock::Instance().ResetTimer(); // avoid the "skipping tick" warning due to long startup
 }
 
 void Engine::Update()

@@ -1,16 +1,16 @@
-#include "timer.h"
+#include "engineclock.h"
 #include "util/types.h"
 #include <chrono>
 #include <ctime>
 
 EMB_NAMESPACE_START
 
-Timer::Timer() noexcept
+EngineClock::EngineClock() noexcept
 {
     ResetTimer();
 }
 
-void Timer::SetTargetFramerate(embU32 targetFPS) noexcept
+void EngineClock::SetTargetFramerate(embU32 targetFPS) noexcept
 {
     if (targetFPS <= 0)
         return;
@@ -21,7 +21,7 @@ void Timer::SetTargetFramerate(embU32 targetFPS) noexcept
     m_TargetFrameTime = ClockDuration(Clock::period::den / targetFPS).count();
 }
 
-void Timer::SetTargetSimRate(embU32 targetTPS) noexcept
+void EngineClock::SetTargetSimRate(embU32 targetTPS) noexcept
 {
     if (targetTPS <= 0)
         return;
@@ -32,57 +32,57 @@ void Timer::SetTargetSimRate(embU32 targetTPS) noexcept
     m_TargetSimTime = ClockDuration(Clock::period::den / targetTPS).count();
 }
 
-embF32 Timer::GetTargetFramerate() const noexcept
+embF32 EngineClock::GetTargetFramerate() const noexcept
 {
     return (embF32)Clock::period::den / (embF32)m_TargetFrameTime;
 }
 
-embF32 Timer::GetTargetSimRate() const noexcept
+embF32 EngineClock::GetTargetSimRate() const noexcept
 {
     return (embF32)Clock::period::den / (embF32)m_TargetSimTime;
 }
 
-embF32 Timer::GetTargetFrameTime() const noexcept
+embF32 EngineClock::GetTargetFrameTime() const noexcept
 {
     return (embF32)m_TargetFrameTime / (embF32)Clock::period::den;
 }
-embF32 Timer::GetTargetSimTime() const noexcept
+embF32 EngineClock::GetTargetSimTime() const noexcept
 {
     return (embF32)m_TargetSimTime / (embF32)Clock::period::den;
 }
 
-embF32 Timer::GetDT() const noexcept
+embF32 EngineClock::GetDT() const noexcept
 {
     return (embF32)m_DT / (embF32)Clock::period::den;
 }
-embF32 Timer::GetFixedDT() const noexcept
+embF32 EngineClock::GetFixedDT() const noexcept
 {
     return (embF32)m_TargetSimTime / (embF32)Clock::period::den;
 }
 
-embF32 Timer::GetRealTimeElapsed() const noexcept
+embF32 EngineClock::GetRealTimeElapsed() const noexcept
 {
     return (embF32)m_RealTimeElapsed / (embF32)Clock::period::den;
 }
 
-embF32 Timer::GetSimTimeElapsed() const noexcept
+embF32 EngineClock::GetSimTimeElapsed() const noexcept
 {
     return (embF32)m_SimTimeElapsed / (embF32)Clock::period::den;
 }
 
-void Timer::SetSimTimeScale(embF32 timeScale) noexcept
+void EngineClock::SetSimTimeScale(embF32 timeScale) noexcept
 {
     if (timeScale < 0)
         return;
 
     m_TimeScale = timeScale;
 }
-embF32 Timer::GetSimTimeScale() const noexcept
+embF32 EngineClock::GetSimTimeScale() const noexcept
 {
     return m_TimeScale;
 }
 
-embBool Timer::ShouldUpdate(embBool simActive) noexcept
+embBool EngineClock::ShouldUpdate(embBool simActive) noexcept
 {
     // How work:
     // Engine constantly checks if is able to update. If yes, run update, and fixed update if possible too.
@@ -158,17 +158,17 @@ embBool Timer::ShouldUpdate(embBool simActive) noexcept
     return true;
 }
 
-embU32 Timer::ShouldFixedUpdate() const noexcept
+embU32 EngineClock::ShouldFixedUpdate() const noexcept
 {
     return m_SimStepCount;
 }
 
-embF32 Timer::GetFixedUpdateInterpAmount() const noexcept
+embF32 EngineClock::GetFixedUpdateInterpAmount() const noexcept
 {
     return 1.0f - ((embF32)(m_LastFixedUpdateTime - m_SimTimeElapsed) / (embF32)m_TargetSimTime);
 }
 
-void Timer::ResetTimer() noexcept
+void EngineClock::ResetTimer() noexcept
 {
     m_LastUpdateTimePointEpoch = Clock::now().time_since_epoch().count();
     m_AppStartTimePoint = Clock::now().time_since_epoch().count();
