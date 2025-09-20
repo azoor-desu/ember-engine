@@ -7,6 +7,6 @@
 
 EMB_NAMESPACE_START
 
-
+std::array<bool, RESOURCEMANAGER_RESOURCE_COUNT> ResourceStoreLookup::isUsed = {};
 
 EMB_NAMESPACE_END

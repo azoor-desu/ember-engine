@@ -7,7 +7,9 @@
 
 #include <array>
 #include <cmath>
+#include <cstddef>
 #include <memory>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -15,17 +17,116 @@ EMB_NAMESPACE_START
 
 using embResourceGUID = embGenericGUID;
 using embResourceTypeID = embU8;
+using embRawPointer = void*;
 
+constexpr embU32 RESOURCEMANAGER_HANDLE_SIZE_BITS = 32;
 constexpr embU32 RESOURCEMANAGER_TYPE_INDEX_BITS = 6; // 64 possible resource types
 constexpr embU32 RESOURCEMANAGER_TYPE_COUNT = PowerIntUnsigned((embU32)2, RESOURCEMANAGER_TYPE_INDEX_BITS);
+
 constexpr embU32 RESOURCEMANAGER_SLOT_INDEX_BITS = 10; // 1024 possible resources of each type in data array at a time
 constexpr embU32 RESOURCEMANAGER_SLOT_COUNT = PowerIntUnsigned((embU32)2, RESOURCEMANAGER_SLOT_INDEX_BITS);
+constexpr embU32 RESOURCEMANAGER_PARITY_BITS = RESOURCEMANAGER_HANDLE_SIZE_BITS - RESOURCEMANAGER_TYPE_INDEX_BITS - RESOURCEMANAGER_SLOT_INDEX_BITS;
+
+constexpr embU32 RESOURCEMANAGER_RESOURCE_COUNT = 4096;
+
+enum class ResourceType : embU8
+{
+    SHADER_VERTEX = 0,
+    SHADER_FRAG,
+    SHADER_COMPUTE,
+    SHADER_PROGRAM,
+
+    TEXTURE_SPRITE,
+    TEXTURE_ALBEDO,
+
+    AUDIO,
+    MODEL_RAW,
+    MODEL_FBX, // or mesh...?
+    FONT_TTF,
+    SCENE, // stores collections of gameobjects
+    OPENGL_VAO, // ??? Maybe model will do...?
+
+    MAX_VAL
+};
+
+//-------------------------------------------------------------------//
+//                           ResourceStore                           //
+//-------------------------------------------------------------------//
+
+class ResourceStoreLookup
+{
+  public:
+    static std::array<bool, RESOURCEMANAGER_RESOURCE_COUNT> isUsed;
+};
+
+// holds an array of a specific resource type
+// store itself only provides a raw pointer according to handle data.
+// Type casting is done by the handle.
+class ResourceStore
+{
+    static constexpr embU32 INVALID_SLOT = embU32_MAX;
+
+  public:
+    constexpr ResourceStore(ResourceType resType)
+        : m_ResourceType {resType}
+    {
+    }
+
+    ResourceType GetResourceType()
+    {
+        return m_ResourceType;
+    }
+
+    static embU32 GetNewEntryIndex(ResourceStore resStore)
+    {
+        // Check which slots are free, return if yes.
+        for (int i = 0; i < ResourceStoreLookup::isUsed.size(); i++)
+        {
+            if (!ResourceStoreLookup::isUsed[i])
+            {
+                ResourceStoreLookup::isUsed[i] = true;
+                return i;
+            }
+        }
+        return INVALID_SLOT;
+    }
+
+    static embRawPointer GetEntryData(ResourceStore resStore, embU32 index)
+    {
+        // TODO: Debug ONLY. check against ResourceStoreLookup to see if resource is valid.
+        return resStore.m_Data[index];
+    }
+
+    static void ReleaseEntry(ResourceStore resStore, embU32 index)
+    {
+        ResourceStoreLookup::isUsed[index] = false;
+    }
+
+  private:
+    const embRawPointer m_Data[RESOURCEMANAGER_RESOURCE_COUNT] = {};
+    const ResourceType m_ResourceType;
+
+    // User wants to get data. handle.get()
+    // Go to specific container (ResourceStore) according to m_TypeIndex.
+    //  > Static cast from IResourceStore to  specific resource store. Should be optimized away.
+    //  > Ends up as a direct call to funcs in ResourceStore
+    // Go to specific slot in m_Data/m_DataGUID according to m_SlotIndex.
+    // Checks if value is valid via parity bits or whatever. [check can be macro'd away... but probably a bad idea]
+    // Returns data in m_Data slot
+    // Pretty fast!
+    // Caveats: entries CANNOT move. This forces fragmentation.
+    // Workaround: have sparse/dense arrays, but introduces another layer of lookup.
+};
+
+
 
 //-------------------------------------------------------------------//
 //                            ResourceHandle                         //
 //-------------------------------------------------------------------//
 
-// Handle to get resources
+// Handles are RUNTIME-ONLY references to resource pointers.
+// To serialize handles, convert them into GUIDs. have a dedicated thing to help convert.
+// Resources MUST be loaded into the ResourceStore before a valid handle can be created.
 template <typename T>
 struct ResourceHandle
 {
@@ -39,61 +140,31 @@ struct ResourceHandle
 
     void LoadResourceData() const noexcept
     {
-    // verify type is valid [Debug]
-    // lookup slot with m_ResourceID
-    // if exists, return.
-    // Else, load... async if possible.
-    // Slot = T::LoadIntoObject(m_ResourceID);
+        // verify type is valid [Debug]
+        // lookup slot with m_ResourceID
+        // if exists, return.
+        // Else, load... async if possible.
+        // Slot = T::LoadIntoObject(m_ResourceID);
     }
 
     T* get() const noexcept
     {
-    // verify type is valid [Debug]
-    // lookup slot with m_ResourceID
-    // if exists, return.
-    // Else, call load and block.
+        // verify type is valid [Debug]
+        // lookup slot with m_ResourceID
+        // if exists, return.
+        // Else, call load and block until loaded
+
+        //return ResourceStore<T>.m_DenseData[m_SlotIndex];
+
         return nullptr; // TODO
     }
 
     T& operator->() const noexcept { return *get(); }
 
   public:
-    constexpr static embU32 c_StructSizeBits = 32;
-
     embU32 m_TypeIndex : RESOURCEMANAGER_TYPE_INDEX_BITS; // the type this resource belongs to. Corresponds to ResourceManager::m_ResourceStoreHashes
     embU32 m_SlotIndex : RESOURCEMANAGER_SLOT_INDEX_BITS; // the slot to find this resource at in its array. Corresponds to ResourceStore::m_Data
-    embU32 m_Parity : c_StructSizeBits - RESOURCEMANAGER_TYPE_INDEX_BITS - RESOURCEMANAGER_SLOT_INDEX_BITS; // for checking if slot is still valid (data is deallocated and replaced?)
-};
-
-//-------------------------------------------------------------------//
-//                     IResourceStore/ResourceStore                  //
-//-------------------------------------------------------------------//
-
-// Common Interface for resource stores
-class IResourceStore
-{
-  public:
-    virtual ~IResourceStore() {} // to shut up unique_ptr complaining about having a deleted destructor
-    virtual int GetSomeShit();
-    virtual embHash64 GetID();
-};
-
-// holds an array of a specific resource type
-template <typename T>
-class ResourceStore : IResourceStore
-{
-  public:
-    void AddToData(embResourceGUID resourceGUID)
-    {
-        
-    }
-    void RemoveFromData(embResourceGUID resourceGUID)
-    {
-    }
-
-  private:
-    std::vector<T> m_Data;
-    std::vector<embResourceGUID> m_DataGUID;
+    embU32 m_Parity : RESOURCEMANAGER_PARITY_BITS; // for checking if slot is still valid (data is deallocated and replaced?)
 };
 
 //-------------------------------------------------------------------//
@@ -105,24 +176,6 @@ class ResourceManager
 {
   private:
   public:
-    enum class ResourceType : embU8
-    {
-        SHADER_VERTEX,
-        SHADER_FRAG,
-        SHADER_COMPUTE,
-        SHADER_PROGRAM,
-
-        TEXTURE_SPRITE,
-        TEXTURE_ALBEDO,
-
-        AUDIO,
-        MODEL_INTERNAL,
-        MODEL_FBX, // or mesh...?
-        FONT_TTF,
-        SCENE,
-        OPENGL_VAO, // ??? Maybe model will do...?
-    };
-
     // Prior to loading Metadata, assets need to be packed/managed first.
     // at least, the generation of metadata needs to be done and saved somewhere.
 
@@ -166,19 +219,13 @@ class ResourceManager
         }
 
         m_ResourceStoreHashes.push_back(typeHash);
-        m_ResourceStores.push_back(std::unique_ptr<IResourceStore>((IResourceStore*)new ResourceStore<T>));
+        //m_ResourceStores.push_back(std::unique_ptr<IResourceStore>((IResourceStore*)new ResourceStore<T>));
     }
 
   public:
   private:
-    std::vector<embHash64> m_ResourceStoreHashes; // hashes here correspond to each elem of m_ResourceStores. Used for lookup.
-    std::vector<std::unique_ptr<IResourceStore>> m_ResourceStores;
-
-    // each resource store container is all over the place...
-    // no way to have each resource store easily be in contiguous memory next to each other.
-    // theoretically, it's possible, as all ResourceStore<T>s have the same size. (one std::vector...)
-    // Can somehow magically put a bunch of these stores contiguously, and magically force a loop over these items.
-    // super sketchy design + compiler may be completely unable to optimize it.
+    std::vector<embHash64> m_ResourceStoreHashes; // each hash here corresponds to each elem of m_ResourceStores. Used for lookup.
+    //std::vector<std::unique_ptr<IResourceStore>> m_ResourceStores;
 };
 
 // Type ID shit lookup
@@ -191,27 +238,6 @@ class ResourceManager
 // Can other systems like component types use this same lookup system?
 // this is basically RTTR lmao
 
-
-
-// TEMP TESTING AND SHIT
-class ExampleResource1 : IResourceStore
-{
-  public:
-    void* m_Data;
-    int someshit;
-    bool othershit;
-
-    int GetSomeShit() override final
-    {
-        return someshit;
-    }
-
-    embHash64 GetID() override final
-    {
-        return Hash::GetTypeHash<ExampleResource1>();
-    }
-};
-
 EMB_NAMESPACE_END
 
 
@@ -222,3 +248,22 @@ EMB_NAMESPACE_END
 //      to be inserted into all of these random locations throughout the code.
 //      Is a pain in the ass to add/remove these types in multiple locations.
 //      A custom parser and table generator can be a solution for this.
+
+// Current storage method:
+// Declare & define a bunch of ResourceStore<TYPE> -> PUT into an array IResourceStore[20]
+// To get data: handle.get() -> Look up IResourceStore[20] ->
+//              get ResourceStore<TYPE> -> get data array -> find elem in data array & RETURN.
+
+
+
+EMB_NAMESPACE_START
+
+// idk register resources via static classes
+
+constexpr ResourceStore resourceStores[3] = {
+    ResourceStore(ResourceType::AUDIO),
+    ResourceStore(ResourceType::MODEL_RAW),
+    ResourceStore(ResourceType::MODEL_FBX),
+};
+
+EMB_NAMESPACE_END
