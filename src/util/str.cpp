@@ -50,8 +50,8 @@ EMB_NAMESPACE_START
 /// <param name="maxReplacements">maximum number of replacements to perform. 0 means unlimited.</param>
 /// <param name="startFromBack">Start replacing from the back to front instead of front to back.</param>
 /// <return>number of times a replacement happens.</return>
-size_t Str_Replace(std::string& toModify, std::string_view toReplace, std::string_view replaceWith,
-                   size_t maxReplacements, bool startFromBack)
+size_t StrReplace(std::string& toModify, std::string_view toReplace, std::string_view replaceWith,
+                  size_t maxReplacements, bool startFromBack)
 {
     size_t count = 0;
     if (!startFromBack)
@@ -90,8 +90,8 @@ size_t Str_Replace(std::string& toModify, std::string_view toReplace, std::strin
 /// <param name="maxReplacements">maximum number of replacements to perform. 0 means unlimited.</param>
 /// <param name="startFromBack">Start iterating from the back to front instead of front to back.</param>
 /// <return>number of times a replacement happened.</return>
-size_t Str_Replace(std::string& toModify, const char toReplace, const char replaceWith,
-                   size_t maxReplacements, bool startFromBack)
+size_t StrReplace(std::string& toModify, const char toReplace, const char replaceWith,
+                  size_t maxReplacements, bool startFromBack)
 {
     size_t count = 0;
 
@@ -134,8 +134,8 @@ size_t Str_Replace(std::string& toModify, const char toReplace, const char repla
 /// <param name="maxRemoves">maximum number of removes to perform. 0 means unlimited.</param>
 /// <param name="startFromBack">Start iterating from the back to front instead of front to back.</param>
 /// <return>number of times a remove happened.</return>
-size_t Str_Remove(std::string& toModify, std::string_view toRemove, size_t maxRemoves,
-                  bool startFromBack)
+size_t StrRemove(std::string& toModify, std::string_view toRemove, size_t maxRemoves,
+                 bool startFromBack)
 {
     size_t count = 0;
     if (!startFromBack)
@@ -172,7 +172,7 @@ size_t Str_Remove(std::string& toModify, std::string_view toRemove, size_t maxRe
 /// <param name="maxRemoves">maximum number of removes to perform. 0 means unlimited.</param>
 /// <param name="startFromBack">Start iterating from the back to front instead of front to back.</param>
 /// <return>number of times a remove happened.</return>
-size_t Str_Remove(std::string& toModify, const char toRemove, size_t maxRemoves, bool startFromBack)
+size_t StrRemove(std::string& toModify, const char toRemove, size_t maxRemoves, bool startFromBack)
 {
     size_t count = 0;
     if (!startFromBack)
@@ -207,7 +207,7 @@ size_t Str_Remove(std::string& toModify, const char toRemove, size_t maxRemoves,
 /// <param name="str">the string to trim</param>
 /// <param name="charsToTrim">the characters that are to be considered unwanted at the front/back, to be removed</param>
 /// <returns>the trimmed string</returns>
-std::string Str_Trim(std::string_view str, std::string_view charsToTrim)
+std::string StrTrim(std::string_view str, std::string_view charsToTrim)
 {
     if (str.empty() || charsToTrim.empty())
         return std::string(str);
@@ -224,7 +224,7 @@ std::string Str_Trim(std::string_view str, std::string_view charsToTrim)
 /// <param name="str">the string to trim</param>
 /// <param name="charsToTrim">the characters that are to be considered unwanted at the front, to be removed</param>
 /// <returns>the trimmed string</returns>
-std::string Str_TrimFront(std::string_view str, std::string_view charsToTrim)
+std::string StrTrimFront(std::string_view str, std::string_view charsToTrim)
 {
     if (str.empty() || charsToTrim.empty())
         return std::string(str);
@@ -240,7 +240,7 @@ std::string Str_TrimFront(std::string_view str, std::string_view charsToTrim)
 /// <param name="str">the string to trim</param>
 /// <param name="charsToTrim">the characters that are to be considered unwanted at the back, to be removed</param>
 /// <returns>the trimmed string</returns>
-std::string Str_TrimBack(std::string_view str, std::string_view charsToTrim)
+std::string StrTrimBack(std::string_view str, std::string_view charsToTrim)
 {
     if (str.empty() || charsToTrim.empty())
         return std::string(str);
@@ -258,44 +258,45 @@ std::string Str_TrimBack(std::string_view str, std::string_view charsToTrim)
 // /// <param name="toSplit">the string to be split.</param>
 // /// <param name="delimiters">delimiter characters to use to mark where to split the string. can use multiple characters at once.</param>
 // /// <returns>vector of strings that have been split.</returns>
-// std::vector<std::string> Str_Split(std::string_view toSplit, std::string_view delimiters)
-// {
-//     std::vector<std::string> ret;
-//     if (toSplit.empty() || delimiters.empty())
-//         return ret;
+std::vector<std::string> StrSplit(std::string_view toSplit, std::string_view delimiters)
+{
+    std::vector<std::string> ret;
+    if (toSplit.empty() || delimiters.empty())
+        return ret;
 
-//     size_t currentPos = 0;
-//     size_t nextDelim = toSplit.find_first_of(delimiters);
+    size_t currentPos = 0;
+    size_t nextDelim = toSplit.find_first_of(delimiters);
 
-//     // Skip start trailing delims if any. set the start pos and next delim to the correct positions.
-//     if (nextDelim == 0)
-//     {
-//         currentPos = toSplit.find_first_not_of(delimiters);
-//         nextDelim = toSplit.find_first_of(delimiters, currentPos);
-//     }
+    // Skip start trailing delims if any. set the start pos and next delim to the correct positions.
+    if (nextDelim == 0)
+    {
+        currentPos = toSplit.find_first_not_of(delimiters);
+        nextDelim = toSplit.find_first_of(delimiters, currentPos);
+    }
 
-//     while (nextDelim != std::string::npos)
-//     {
-//         ret.emplace_back(toSplit.substr(currentPos, nextDelim - currentPos));
-//         currentPos = toSplit.find_first_not_of(delimiters, nextDelim);
-//         nextDelim = toSplit.find_first_of(delimiters, currentPos);
-//     }
+    while (nextDelim != std::string::npos)
+    {
+        ret.emplace_back(toSplit.substr(currentPos, nextDelim - currentPos));
+        currentPos = toSplit.find_first_not_of(delimiters, nextDelim);
+        nextDelim = toSplit.find_first_of(delimiters, currentPos);
+    }
 
-//     // Handle case where there is no trailing delim. nextDelim is npos, currentPos exists.
-//     // pushback currentPos to end of string.
-//     if (currentPos != std::string::npos && nextDelim == std::string::npos)
-//     {
-//         ret.emplace_back(toSplit.substr(currentPos, toSplit.size() - currentPos));
-//     }
+    // Handle case where there is no trailing delim. nextDelim is npos, currentPos exists.
+    // pushback currentPos to end of string.
+    if (currentPos != std::string::npos && nextDelim == std::string::npos)
+    {
+        ret.emplace_back(toSplit.substr(currentPos, toSplit.size() - currentPos));
+    }
 
-//     return ret;
-// }
+    return ret;
+}
+
 /// <summary>
 /// Converts a string to upper case.
 /// </summary>
 /// <param name="str">string to convert</param>
 /// <returns>copy of a string that is upper-cased</returns>
-std::string Str_ToUpper(std::string_view str)
+std::string StrToUpper(std::string_view str)
 {
     std::string ret(str);
     for (auto& c : ret)
@@ -307,7 +308,7 @@ std::string Str_ToUpper(std::string_view str)
 /// </summary>
 /// <param name="str">string to convert</param>
 /// <returns>copy of a string that is lower-cased</returns>
-std::string Str_ToLower(std::string_view str)
+std::string StrToLower(std::string_view str)
 {
     std::string ret(str);
     for (auto& c : ret)
@@ -321,7 +322,7 @@ std::string Str_ToLower(std::string_view str)
 /// <param name="str">String to check if sequence of characters exists</param>
 /// <param name="startsWith">sequence of characters that the string should start with</param>
 /// <returns>Returns true if match, false if not.</returns>
-bool Str_StartsWith(std::string_view str, std::string_view startsWith)
+bool StrStartsWith(std::string_view str, std::string_view startsWith)
 {
     if (startsWith.empty() || str.size() < startsWith.size())
         return false;
@@ -338,7 +339,7 @@ bool Str_StartsWith(std::string_view str, std::string_view startsWith)
 /// <param name="str">String to check if sequence of characters exists</param>
 /// <param name="endsWith">sequence of characters that the string should end with</param>
 /// <returns>Returns true if match, false if not.</returns>
-bool Str_EndsWith(std::string_view str, std::string_view endsWith)
+bool StrEndsWith(std::string_view str, std::string_view endsWith)
 {
     if (endsWith.empty() || str.size() < endsWith.size())
         return false;
