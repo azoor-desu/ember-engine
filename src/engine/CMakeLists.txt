@@ -2,7 +2,8 @@ target_sources(
     EngineLib
     PRIVATE 
         engine.cpp
+        engineclock.cpp
         graphics.cpp
-        timer.cpp
         window.cpp
+        resourcemanager.cpp
 )
