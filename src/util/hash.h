@@ -7,7 +7,7 @@
 EMB_NAMESPACE_START
 
 // Generic GUID type. Specialize this into further GUID types if needed.
-using embGenericGUID = embU64;
+using embGenericGuid = embU64;
 using embHash64 = embU64;
 
 class Hash
@@ -33,14 +33,14 @@ class Hash
     }
 
     // Uses dumb algo to spit out a unique enough 64bit GUID.
-    static embGenericGUID GenerateGUID() noexcept;
+    static embGenericGuid GenerateGUID() noexcept;
 
     // Computes a unique hash of the type passed as the template parameter.
     // Will always generate the same hash for the same class, but may not be consistent across platforms or compilers.
     // Passing in additional qualifiers e.g. <const T> vs <T> will result in a different hash.
     // The permutation does not matter e.g. <T const> == <const T>
-    template<typename T>
-    consteval static embHash64 GetTypeHash()
+    template <typename T>
+    consteval static embHash64 GetTypeHash() noexcept
     {
 #ifdef _MSC_VER
         // MSVC version of getting function signature of this function

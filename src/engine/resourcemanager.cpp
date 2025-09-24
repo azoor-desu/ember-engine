@@ -7,6 +7,6 @@
 
 EMB_NAMESPACE_START
 
-std::array<bool, RESOURCEMANAGER_RESOURCE_COUNT> ResourceStoreLookup::isUsed = {};
+std::array<std::array<ResourceTid, RESOURCEMANAGER_RESOURCE_COUNT>, (embU64)ResourceType::MAX_VAL> ResourceStoreLookup::m_Data = {};
 
 EMB_NAMESPACE_END

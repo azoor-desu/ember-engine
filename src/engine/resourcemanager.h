@@ -5,9 +5,12 @@
 #include "util/str.h"
 #include "util/types.h"
 
+#include "debug.h"
+
 #include <array>
 #include <cmath>
 #include <cstddef>
+#include <initializer_list>
 #include <memory>
 #include <set>
 #include <utility>
@@ -15,8 +18,18 @@
 
 EMB_NAMESPACE_START
 
-using embResourceGUID = embGenericGUID;
-using embResourceTypeID = embU8;
+// debug macros
+#ifdef EMB_DEF_DEBUG
+#    define EMB_DEF_VALIDATE_RESMGR
+#endif
+#ifdef EMB_DEF_VALIDATE_RESMGR
+#    define EMB_IFDEF_VALIDATE_RESMGR (code) code
+#else
+#    define EMB_IFDEF_VALIDATE_RESMGR (code)
+#endif
+
+//using embResourceTid = embGenericGuid; // change to sth custom
+//using embResourceTypeID = embU8;
 using embRawPointer = void*;
 
 constexpr embU32 RESOURCEMANAGER_HANDLE_SIZE_BITS = 32;
@@ -27,26 +40,33 @@ constexpr embU32 RESOURCEMANAGER_SLOT_INDEX_BITS = 10; // 1024 possible resource
 constexpr embU32 RESOURCEMANAGER_SLOT_COUNT = PowerIntUnsigned((embU32)2, RESOURCEMANAGER_SLOT_INDEX_BITS);
 constexpr embU32 RESOURCEMANAGER_PARITY_BITS = RESOURCEMANAGER_HANDLE_SIZE_BITS - RESOURCEMANAGER_TYPE_INDEX_BITS - RESOURCEMANAGER_SLOT_INDEX_BITS;
 
-constexpr embU32 RESOURCEMANAGER_RESOURCE_COUNT = 4096;
+constexpr embU32 RESOURCEMANAGER_RESOURCE_COUNT = 2048;
+constexpr embU32 INVALID_SLOT = embU32_MAX;
 
 enum class ResourceType : embU8
 {
     SHADER_VERTEX = 0,
     SHADER_FRAG,
-    SHADER_COMPUTE,
+    // SHADER_COMPUTE,
     SHADER_PROGRAM,
 
     TEXTURE_SPRITE,
     TEXTURE_ALBEDO,
 
     AUDIO,
-    MODEL_RAW,
-    MODEL_FBX, // or mesh...?
+    // MODEL_RAW,
+    // MODEL_FBX, // or mesh...?
     FONT_TTF,
     SCENE, // stores collections of gameobjects
-    OPENGL_VAO, // ??? Maybe model will do...?
+    // OPENGL_VAO, // ??? Maybe model will do...?
 
     MAX_VAL
+};
+
+struct ResourceTid
+{
+    ResourceType m_ResType : 8 {};
+    embU32 m_ResPartialGuidP : 24 {}; // least significant portion of full resourceguid
 };
 
 //-------------------------------------------------------------------//
@@ -55,8 +75,59 @@ enum class ResourceType : embU8
 
 class ResourceStoreLookup
 {
+    ResourceStoreLookup() = delete; // static class
+
   public:
-    static std::array<bool, RESOURCEMANAGER_RESOURCE_COUNT> isUsed;
+    static ResourceTid GetValue(ResourceType resType, embU32 index)
+    {
+#ifdef EMB_DEF_VALIDATE_RESMGR
+        EMB_ASSERT_HARD(resType >= ResourceType::MAX_VAL || index >= RESOURCEMANAGER_RESOURCE_COUNT, "resType or resource index out of range");
+#endif
+        return m_Data[(embU64)resType][index];
+    }
+
+    static embU32 FindNewSlot(ResourceType resType, ResourceTid resourceGUID)
+    {
+#ifdef EMB_DEF_VALIDATE_RESMGR
+        EMB_ASSERT_HARD(resType >= ResourceType::MAX_VAL, "resType out of range");
+#endif
+        // Find empty slot
+        for (embU32 i = 0; i < RESOURCEMANAGER_RESOURCE_COUNT; i++)
+        {
+            if (m_Data[(embU64)resType][i] == 0)
+            {
+                return i;
+            }
+        }
+        return INVALID_SLOT;
+    }
+
+    static void SetValue(ResourceType resType, embU32 index, embResourceTid resourceGUID)
+    {
+#ifdef EMB_DEF_VALIDATE_RESMGR
+        EMB_ASSERT_HARD(resType >= ResourceType::MAX_VAL || index >= RESOURCEMANAGER_RESOURCE_COUNT, "resType or resource index out of range");
+#endif
+        m_Data[(embU64)resType][index] = resourceGUID;
+    }
+
+    static embU32 GetExistingSlotFromValue(ResourceType resType, embResourceTid resourceGUID)
+    {
+#ifdef EMB_DEF_VALIDATE_RESMGR
+        EMB_ASSERT_HARD(resType >= ResourceType::MAX_VAL, "resType out of range");
+#endif
+        // Find resourceGUID
+        for (embU32 i = 0; i < RESOURCEMANAGER_RESOURCE_COUNT; i++)
+        {
+            if (m_Data[(embU64)resType][i] == resourceGUID)
+            {
+                return i;
+            }
+        }
+        return INVALID_SLOT;
+    }
+
+  private:
+    static std::array<std::array<embResourceTid, RESOURCEMANAGER_RESOURCE_COUNT>, (embU64)ResourceType::MAX_VAL> m_Data;
 };
 
 // holds an array of a specific resource type
@@ -64,42 +135,37 @@ class ResourceStoreLookup
 // Type casting is done by the handle.
 class ResourceStore
 {
-    static constexpr embU32 INVALID_SLOT = embU32_MAX;
-
   public:
     constexpr ResourceStore(ResourceType resType)
         : m_ResourceType {resType}
     {
     }
 
-    ResourceType GetResourceType()
+    ResourceType GetResourceType() const noexcept
     {
         return m_ResourceType;
     }
 
-    static embU32 GetNewEntryIndex(ResourceStore resStore)
+    static embU32 GetNewEntryIndex(ResourceStore resStore, embResourceTid resId)
     {
+#ifdef EMB_DEF_VALIDATE_RESMGR
+        // check if there is already an existing entry.
+        // If there is, throw error. Not supposed to call this if there is an existing entry!
+        if (ResourceStoreLookup::GetExistingSlotFromValue(resStore.m_ResourceType, resId) != INVALID_SLOT)
+            Breakpoint();
+#endif
         // Check which slots are free, return if yes.
-        for (int i = 0; i < ResourceStoreLookup::isUsed.size(); i++)
-        {
-            if (!ResourceStoreLookup::isUsed[i])
-            {
-                ResourceStoreLookup::isUsed[i] = true;
-                return i;
-            }
-        }
-        return INVALID_SLOT;
+        return ResourceStoreLookup::FindNewSlot(resStore.m_ResourceType, resId);
     }
 
     static embRawPointer GetEntryData(ResourceStore resStore, embU32 index)
     {
-        // TODO: Debug ONLY. check against ResourceStoreLookup to see if resource is valid.
-        return resStore.m_Data[index];
+        return resStore.m_Data[index]; // fast
     }
 
     static void ReleaseEntry(ResourceStore resStore, embU32 index)
     {
-        ResourceStoreLookup::isUsed[index] = false;
+        ResourceStoreLookup::SetValue(resStore.m_ResourceType, index, 0);
     }
 
   private:
@@ -118,45 +184,40 @@ class ResourceStore
     // Workaround: have sparse/dense arrays, but introduces another layer of lookup.
 };
 
-
+constexpr ResourceStore gResourceStores[(embU64)ResourceType::MAX_VAL] = {
+    ResourceStore(ResourceType::SHADER_VERTEX),
+    ResourceStore(ResourceType::SHADER_FRAG),
+    ResourceStore(ResourceType::SHADER_PROGRAM),
+    ResourceStore(ResourceType::TEXTURE_SPRITE),
+    ResourceStore(ResourceType::TEXTURE_ALBEDO),
+    ResourceStore(ResourceType::AUDIO),
+    ResourceStore(ResourceType::FONT_TTF),
+    ResourceStore(ResourceType::SCENE),
+};
 
 //-------------------------------------------------------------------//
 //                            ResourceHandle                         //
 //-------------------------------------------------------------------//
 
-// Handles are RUNTIME-ONLY references to resource pointers.
-// To serialize handles, convert them into GUIDs. have a dedicated thing to help convert.
-// Resources MUST be loaded into the ResourceStore before a valid handle can be created.
+// Handles are RUNTIME-ONLY references to raw pointers.
+// Handles ALWAYS assume the data they point to is correct.
+// Validation handling only happens during Handle Creation (From ResourceManager), and assuming that
+// ResourceStore's create and delete are working properly according to ResourceHandle's REF COUNTING.
 template <typename T>
 struct ResourceHandle
 {
     ResourceHandle(); // ADD REF COUNTER
     ~ResourceHandle(); // decrement ref counter
 
-    embBool CheckResourceDataLoaded() const noexcept
-    {
-        return false; // TODO
-    }
-
-    void LoadResourceData() const noexcept
-    {
-        // verify type is valid [Debug]
-        // lookup slot with m_ResourceID
-        // if exists, return.
-        // Else, load... async if possible.
-        // Slot = T::LoadIntoObject(m_ResourceID);
-    }
-
     T* get() const noexcept
     {
-        // verify type is valid [Debug]
-        // lookup slot with m_ResourceID
-        // if exists, return.
-        // Else, call load and block until loaded
-
-        //return ResourceStore<T>.m_DenseData[m_SlotIndex];
-
-        return nullptr; // TODO
+#ifdef EMB_DEF_VALIDATE_RESMGR
+        // check if the current slot is the same as this resource handle's resourceId
+        // If not, means data has been unloaded or not loaded. error out.
+        if (ResourceStoreLookup::GetValue(m_TypeIndex, m_SlotIndex) !=)
+            Breakpoint();
+#endif
+        return (T*)ResourceStore::GetEntryData(gResourceStores[m_TypeIndex], m_SlotIndex);
     }
 
     T& operator->() const noexcept { return *get(); }
@@ -190,13 +251,13 @@ class ResourceManager
 
     // for quick and dirty loading. GUIDs should be preferred.
     // used when no Editor to handle GUIDs is available yet.
-    embResourceGUID NameToGUID(embHash64 pathHash)
+    embResourceTid NameToGUID(embHash64 pathHash)
     {
         return 0;
     }
 
     template <typename T>
-    ResourceHandle<T> GetResourceHandle(embResourceGUID resourceGUID)
+    ResourceHandle<T> GetResourceHandle(embResourceTid resourceGUID)
     {
         // check if GUID exists or not. If not exist, error.
         // Else,
@@ -204,22 +265,6 @@ class ResourceManager
         ResourceHandle<T> ret;
 
         return ret;
-    }
-
-    template <typename T>
-    void RegisterType()
-    {
-        constexpr embHash64 typeHash = Hash::GetTypeHash<T>();
-
-        // check if alr exist
-        for (auto hash : m_ResourceStoreHashes)
-        {
-            if (hash == typeHash)
-                return;
-        }
-
-        m_ResourceStoreHashes.push_back(typeHash);
-        //m_ResourceStores.push_back(std::unique_ptr<IResourceStore>((IResourceStore*)new ResourceStore<T>));
     }
 
   public:
@@ -240,30 +285,22 @@ class ResourceManager
 
 EMB_NAMESPACE_END
 
-
-// Future improvements:
-// - Move the registration of types into compile time. This will significantly speed up lookups of types and shit.
-//      > Caveat: Will require all resource types to be known to ResourceManager at compile time. A class declaration will do.
-//      Most likely, more boilerplate code like allocating custom ResourceStore<T> types or generating a lookup table will require these custom types
-//      to be inserted into all of these random locations throughout the code.
-//      Is a pain in the ass to add/remove these types in multiple locations.
-//      A custom parser and table generator can be a solution for this.
-
 // Current storage method:
 // Declare & define a bunch of ResourceStore<TYPE> -> PUT into an array IResourceStore[20]
 // To get data: handle.get() -> Look up IResourceStore[20] ->
 //              get ResourceStore<TYPE> -> get data array -> find elem in data array & RETURN.
 
 
+// Creating Handles/Loading resources
+// Start out blank state. ResourceStore arrays all set up but empty.
+// When a GameObject is deserialized, a ResourceId (to uniquely identify hehe.png) is provided
+//  > Same thing when adding a new ResourceId to an object too, ResourceId will be provided
+//  > ResourceId needs to contain the type too.
+// Throw ResourceId into ResourceManager and ask for a ResourceHandle.
+//  > Resourcemanager loads in the raw data, gets the pointer, and stores the raw pointer in ResourceStore.
+//  > If data alr loaded, just return a handle.
+// When all ResourceHandles disappear (ref counting == 0), remove that resource in ResourceStore.
 
-EMB_NAMESPACE_START
-
-// idk register resources via static classes
-
-constexpr ResourceStore resourceStores[3] = {
-    ResourceStore(ResourceType::AUDIO),
-    ResourceStore(ResourceType::MODEL_RAW),
-    ResourceStore(ResourceType::MODEL_FBX),
-};
-
-EMB_NAMESPACE_END
+// On deserialize:
+// Need to be able to convert Handles back into ResourceId.
+// When storing the raw pointer in ResourceStore, add the ResourceId as well in the backing store.
