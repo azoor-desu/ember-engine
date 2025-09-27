@@ -37,6 +37,9 @@ using embS64 = int64_t;
 // 64-bits, 8 bytes, unsigned
 using embU64 = uint64_t;
 
+// system-native size for array index etc
+using embSizeT = uint64_t;
+
 // 32-bits, 4 bytes
 using embF32 = float;
 // 64-bits, 8 bytes

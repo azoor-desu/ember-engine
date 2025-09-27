@@ -27,15 +27,15 @@ void Engine::Init()
     // Rest of Engine init logic here
     // Registering RESOURCE stuffs.
 
-    embU32 res = ResourceStore::GetNewEntryIndex(gResourceStores[0]);
+    embU32 res = ResourcePointerList::GetNewEntryIndex(gResourceStores[0]);
     printf("res: %d\n", res);
-    res = ResourceStore::GetNewEntryIndex(gResourceStores[0]);
+    res = ResourcePointerList::GetNewEntryIndex(gResourceStores[0]);
     printf("res: %d\n", res);
-    res = ResourceStore::GetNewEntryIndex(gResourceStores[0]);
+    res = ResourcePointerList::GetNewEntryIndex(gResourceStores[0]);
     printf("res: %d\n", res);
 
-    ResourceStore::ReleaseEntry(gResourceStores[0], 0);
-    res = ResourceStore::GetNewEntryIndex(gResourceStores[0]);
+    ResourcePointerList::ReleaseEntry(gResourceStores[0], 0);
+    res = ResourcePointerList::GetNewEntryIndex(gResourceStores[0]);
     printf("should be 0: %d\n", res);
 
 

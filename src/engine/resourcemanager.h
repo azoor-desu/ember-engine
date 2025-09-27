@@ -1,4 +1,5 @@
 #pragma once
+#include "util/containers.h"
 #include "util/hash.h"
 #include "util/macros.h"
 #include "util/math.h"
@@ -23,14 +24,13 @@ EMB_NAMESPACE_START
 #    define EMB_DEF_VALIDATE_RESMGR
 #endif
 #ifdef EMB_DEF_VALIDATE_RESMGR
-#    define EMB_IFDEF_VALIDATE_RESMGR (code) code
+#    define EMB_IFDEF_VALIDATE_RESMGR(code) code
 #else
-#    define EMB_IFDEF_VALIDATE_RESMGR (code)
+#    define EMB_IFDEF_VALIDATE_RESMGR(code)
 #endif
 
-//using embResourceTid = embGenericGuid; // change to sth custom
-//using embResourceTypeID = embU8;
 using embRawPointer = void*;
+using embResourceGuid = embU32;
 
 constexpr embU32 RESOURCEMANAGER_HANDLE_SIZE_BITS = 32;
 constexpr embU32 RESOURCEMANAGER_TYPE_INDEX_BITS = 6; // 64 possible resource types
@@ -60,140 +60,105 @@ enum class ResourceType : embU8
     SCENE, // stores collections of gameobjects
     // OPENGL_VAO, // ??? Maybe model will do...?
 
-    MAX_VAL
-};
-
-struct ResourceTid
-{
-    ResourceType m_ResType : 8 {};
-    embU32 m_ResPartialGuidP : 24 {}; // least significant portion of full resourceguid
+    ENUM_COUNT
 };
 
 //-------------------------------------------------------------------//
 //                           ResourceStore                           //
 //-------------------------------------------------------------------//
 
-class ResourceStoreLookup
-{
-    ResourceStoreLookup() = delete; // static class
-
-  public:
-    static ResourceTid GetValue(ResourceType resType, embU32 index)
-    {
-#ifdef EMB_DEF_VALIDATE_RESMGR
-        EMB_ASSERT_HARD(resType >= ResourceType::MAX_VAL || index >= RESOURCEMANAGER_RESOURCE_COUNT, "resType or resource index out of range");
-#endif
-        return m_Data[(embU64)resType][index];
-    }
-
-    static embU32 FindNewSlot(ResourceType resType, ResourceTid resourceGUID)
-    {
-#ifdef EMB_DEF_VALIDATE_RESMGR
-        EMB_ASSERT_HARD(resType >= ResourceType::MAX_VAL, "resType out of range");
-#endif
-        // Find empty slot
-        for (embU32 i = 0; i < RESOURCEMANAGER_RESOURCE_COUNT; i++)
-        {
-            if (m_Data[(embU64)resType][i] == 0)
-            {
-                return i;
-            }
-        }
-        return INVALID_SLOT;
-    }
-
-    static void SetValue(ResourceType resType, embU32 index, embResourceTid resourceGUID)
-    {
-#ifdef EMB_DEF_VALIDATE_RESMGR
-        EMB_ASSERT_HARD(resType >= ResourceType::MAX_VAL || index >= RESOURCEMANAGER_RESOURCE_COUNT, "resType or resource index out of range");
-#endif
-        m_Data[(embU64)resType][index] = resourceGUID;
-    }
-
-    static embU32 GetExistingSlotFromValue(ResourceType resType, embResourceTid resourceGUID)
-    {
-#ifdef EMB_DEF_VALIDATE_RESMGR
-        EMB_ASSERT_HARD(resType >= ResourceType::MAX_VAL, "resType out of range");
-#endif
-        // Find resourceGUID
-        for (embU32 i = 0; i < RESOURCEMANAGER_RESOURCE_COUNT; i++)
-        {
-            if (m_Data[(embU64)resType][i] == resourceGUID)
-            {
-                return i;
-            }
-        }
-        return INVALID_SLOT;
-    }
-
-  private:
-    static std::array<std::array<embResourceTid, RESOURCEMANAGER_RESOURCE_COUNT>, (embU64)ResourceType::MAX_VAL> m_Data;
-};
-
-// holds an array of a specific resource type
-// store itself only provides a raw pointer according to handle data.
-// Type casting is done by the handle.
+// Stores arrays of raw pointers.
+// Does not manage resource lifetime!
 class ResourceStore
 {
   public:
-    constexpr ResourceStore(ResourceType resType)
-        : m_ResourceType {resType}
+    using ResourceSlotIndex = embU32;
+
+    embRawPointer GetResourceData(ResourceType resType, ResourceSlotIndex slot) const noexcept
     {
+        EMB_ASSERT_HARD(resType < ResourceType::ENUM_COUNT,
+                        "resType out of range");
+        EMB_ASSERT_HARD(slot < RESOURCEMANAGER_RESOURCE_COUNT,
+                        "resource slot index out of range");
+
+        // check that the corresponding m_PointerGuids is not 0
+        EMB_IFDEF_VALIDATE_RESMGR(EMB_ASSERT_HARD(
+            m_PointerGuids[(embSizeT)resType][slot] != 0,
+            "Desynchronized m_PointerGuids and m_Pointers, possibly prior to call."));
+
+        return m_Pointers[(embSizeT)resType][slot]; // fast
     }
 
-    ResourceType GetResourceType() const noexcept
+    // Warning: Does not remove the allocated data. Only removes the related entires in this class.
+    void RemoveResourceDataEntry(ResourceType resType, ResourceSlotIndex slot) noexcept
     {
-        return m_ResourceType;
+        EMB_ASSERT_HARD(resType < ResourceType::ENUM_COUNT,
+                        "resType out of range");
+        EMB_ASSERT_HARD(slot < RESOURCEMANAGER_RESOURCE_COUNT,
+                        "resource slot index out of range");
+
+        // check for double free
+        EMB_IFDEF_VALIDATE_RESMGR(EMB_ASSERT_HARD(
+            m_PointerGuids[(embSizeT)resType][slot] != 0,
+            "ResourceStore double free!"));
+
+        m_PointerGuids[(embSizeT)resType][slot] = 0;
+        m_Pointers[(embSizeT)resType][slot] = nullptr;
     }
 
-    static embU32 GetNewEntryIndex(ResourceStore resStore, embResourceTid resId)
+    bool CheckResourceDataExistsFromGuid(ResourceType resType, embResourceGuid resGuid) const noexcept
     {
-#ifdef EMB_DEF_VALIDATE_RESMGR
-        // check if there is already an existing entry.
-        // If there is, throw error. Not supposed to call this if there is an existing entry!
-        if (ResourceStoreLookup::GetExistingSlotFromValue(resStore.m_ResourceType, resId) != INVALID_SLOT)
-            Breakpoint();
-#endif
-        // Check which slots are free, return if yes.
-        return ResourceStoreLookup::FindNewSlot(resStore.m_ResourceType, resId);
+        EMB_ASSERT_HARD(resType < ResourceType::ENUM_COUNT,
+                        "resType out of range");
+
+        for (embU32 i = 0; i < RESOURCEMANAGER_RESOURCE_COUNT; i++)
+        {
+            if (m_PointerGuids[(embSizeT)resType][i] == resGuid)
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
-    static embRawPointer GetEntryData(ResourceStore resStore, embU32 index)
+    // Adds new entry to the store.
+    void SetNewResourceData(ResourceType resType, embResourceGuid resGuid, embRawPointer ptr) noexcept
     {
-        return resStore.m_Data[index]; // fast
+        EMB_ASSERT_HARD(resType < ResourceType::ENUM_COUNT,
+                        "resType out of range");
+
+        // iF resource is already in store, error.
+        EMB_IFDEF_VALIDATE_RESMGR(EMB_ASSERT_HARD(
+            !CheckResourceDataExistsFromGuid(resType, resGuid),
+            "attempted to set new resource while it is already in store"));
+
+        // Find new slot and set.
+        for (embU32 i = 0; i < RESOURCEMANAGER_RESOURCE_COUNT; i++)
+        {
+            if (m_PointerGuids[(embSizeT)resType][i] == 0)
+            {
+                EMB_IFDEF_VALIDATE_RESMGR(EMB_ASSERT_HARD(
+                    m_Pointers[(embSizeT)resType][i] == nullptr,
+                    "Desynchronized m_PointerGuids and m_Pointers, possibly prior to call."));
+
+                m_PointerGuids[(embSizeT)resType][i] = resGuid;
+                m_Pointers[(embSizeT)resType][i] = ptr;
+                break;
+            }
+        }
+
+        // crash if no more slots
+        EMB_ASSERT_HARD(false,
+                        "unable to SetNewResourceData, ran out of slots! consider increasing RESOURCEMANAGER_RESOURCE_COUNT.");
     }
 
-    static void ReleaseEntry(ResourceStore resStore, embU32 index)
-    {
-        ResourceStoreLookup::SetValue(resStore.m_ResourceType, index, 0);
-    }
+    using PointerArray = embFixedSizeArray<embRawPointer, RESOURCEMANAGER_RESOURCE_COUNT>;
+    embFixedSizeArray<PointerArray, (embU64)ResourceType::ENUM_COUNT> m_Pointers;
 
-  private:
-    const embRawPointer m_Data[RESOURCEMANAGER_RESOURCE_COUNT] = {};
-    const ResourceType m_ResourceType;
-
-    // User wants to get data. handle.get()
-    // Go to specific container (ResourceStore) according to m_TypeIndex.
-    //  > Static cast from IResourceStore to  specific resource store. Should be optimized away.
-    //  > Ends up as a direct call to funcs in ResourceStore
-    // Go to specific slot in m_Data/m_DataGUID according to m_SlotIndex.
-    // Checks if value is valid via parity bits or whatever. [check can be macro'd away... but probably a bad idea]
-    // Returns data in m_Data slot
-    // Pretty fast!
-    // Caveats: entries CANNOT move. This forces fragmentation.
-    // Workaround: have sparse/dense arrays, but introduces another layer of lookup.
+    using GuidArray = embFixedSizeArray<embResourceGuid, RESOURCEMANAGER_RESOURCE_COUNT>;
+    embFixedSizeArray<GuidArray, (embU64)ResourceType::ENUM_COUNT> m_PointerGuids;
 };
 
-constexpr ResourceStore gResourceStores[(embU64)ResourceType::MAX_VAL] = {
-    ResourceStore(ResourceType::SHADER_VERTEX),
-    ResourceStore(ResourceType::SHADER_FRAG),
-    ResourceStore(ResourceType::SHADER_PROGRAM),
-    ResourceStore(ResourceType::TEXTURE_SPRITE),
-    ResourceStore(ResourceType::TEXTURE_ALBEDO),
-    ResourceStore(ResourceType::AUDIO),
-    ResourceStore(ResourceType::FONT_TTF),
-    ResourceStore(ResourceType::SCENE),
-};
 
 //-------------------------------------------------------------------//
 //                            ResourceHandle                         //
@@ -217,15 +182,14 @@ struct ResourceHandle
         if (ResourceStoreLookup::GetValue(m_TypeIndex, m_SlotIndex) !=)
             Breakpoint();
 #endif
-        return (T*)ResourceStore::GetEntryData(gResourceStores[m_TypeIndex], m_SlotIndex);
+        return (T*)ResourcePtrStore::GetEntryData(gResourceStores[m_TypeIndex], m_SlotIndex);
     }
 
     T& operator->() const noexcept { return *get(); }
 
   public:
-    embU32 m_TypeIndex : RESOURCEMANAGER_TYPE_INDEX_BITS; // the type this resource belongs to. Corresponds to ResourceManager::m_ResourceStoreHashes
-    embU32 m_SlotIndex : RESOURCEMANAGER_SLOT_INDEX_BITS; // the slot to find this resource at in its array. Corresponds to ResourceStore::m_Data
-    embU32 m_Parity : RESOURCEMANAGER_PARITY_BITS; // for checking if slot is still valid (data is deallocated and replaced?)
+    embU32 m_TypeIndex : RESOURCEMANAGER_TYPE_INDEX_BITS;
+    embU32 m_SlotIndex : RESOURCEMANAGER_SLOT_INDEX_BITS;
 };
 
 //-------------------------------------------------------------------//

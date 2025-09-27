@@ -7,6 +7,6 @@
 
 EMB_NAMESPACE_START
 
-std::array<std::array<ResourceTid, RESOURCEMANAGER_RESOURCE_COUNT>, (embU64)ResourceType::MAX_VAL> ResourceStoreLookup::m_Data = {};
+std::array<std::array<ResourceTid, RESOURCEMANAGER_RESOURCE_COUNT>, (embU64)ResourceType::ENUM_COUNT> ResourcePointerListData::m_Data = {};
 
 EMB_NAMESPACE_END
