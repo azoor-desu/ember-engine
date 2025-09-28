@@ -45,6 +45,12 @@ using embF32 = float;
 // 64-bits, 8 bytes
 using embF64 = double;
 
+// hashes and GUIDs
+using embGuid = embU32;
+using embGuid64 = embU64;
+using embHash = embU32;
+using embHash64 = embU64;
+
 constexpr embS8 embS8_MAX = std::numeric_limits<embS8>::max();
 constexpr embS8 embS8_MIN = std::numeric_limits<embS8>::min();
 constexpr embU8 embU8_MAX = std::numeric_limits<embU8>::max();

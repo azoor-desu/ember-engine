@@ -6,19 +6,20 @@
 
 EMB_NAMESPACE_START
 
-// Generic GUID type. Specialize this into further GUID types if needed.
-using embGenericGuid = embU64;
-using embHash64 = embU64;
-
 class Hash
 {
     Hash() = delete;
     ~Hash() = delete;
 
   public:
+    consteval static embHash GenerateHash(embStrView strView) noexcept
+    {
+        return (embHash)GenerateHash64(strView);
+    }
+
     // Basic FNV-1a Hashing: https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function
     // Not the best but super simple.
-    consteval static embHash64 GenerateHash(embStrView strView) noexcept
+    consteval static embHash64 GenerateHash64(embStrView strView) noexcept
     {
         if (strView.empty())
             return 0;
@@ -32,15 +33,32 @@ class Hash
         return result << 1;
     }
 
-    // Uses dumb algo to spit out a unique enough 64bit GUID.
-    static embGenericGuid GenerateGUID() noexcept;
+    // Uses dumb algo to spit out a unique enough 32/64bit GUID.
+    static embGuid GenerateGUID() noexcept;
+    static embGuid64 GenerateGUID64() noexcept;
 
     // Computes a unique hash of the type passed as the template parameter.
     // Will always generate the same hash for the same class, but may not be consistent across platforms or compilers.
     // Passing in additional qualifiers e.g. <const T> vs <T> will result in a different hash.
     // The permutation does not matter e.g. <T const> == <const T>
     template <typename T>
-    consteval static embHash64 GetTypeHash() noexcept
+    consteval static embHash64 GetTypeHash64() noexcept
+    {
+#ifdef _MSC_VER
+        // MSVC version of getting function signature of this function
+        return GenerateHash64(__FUNCSIG__);
+#else
+        // Non-MSVC version of getting function signature of this function
+        return GenerateHash64(__PRETTY_FUNCTION__);
+#endif
+    }
+
+    // Computes a unique hash of the type passed as the template parameter.
+    // Will always generate the same hash for the same class, but may not be consistent across platforms or compilers.
+    // Passing in additional qualifiers e.g. <const T> vs <T> will result in a different hash.
+    // The permutation does not matter e.g. <T const> == <const T>
+    template <typename T>
+    consteval static embHash GetTypeHash() noexcept
     {
 #ifdef _MSC_VER
         // MSVC version of getting function signature of this function

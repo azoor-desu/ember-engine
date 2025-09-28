@@ -1,7 +1,6 @@
 #pragma once
 #include "util/macros.h"
 #include <cassert>
-#include <csignal>
 
 EMB_NAMESPACE_START
 
@@ -40,25 +39,6 @@ EMB_NAMESPACE_START
 #    define EMB_DEF_MSVC
 #else
 #    error "Compiler not supported!"
-#endif
-
-// ===== Misc Macro Helpers ====
-#ifdef EMB_DEF_DEBUG
-#    define EMB_MACRO_START \
-        do \
-        {
-#    define EMB_MACRO_END \
-        } \
-        while (0)
-#else
-// Slightly more optimal(?) macro. Not sure if true.
-#    define EMB_MACRO_START \
-        if (1) \
-        {
-#    define EMB_MACRO_END \
-        } \
-        else \
-        {}
 #endif
 
 // ===== Compiler Hints ====
@@ -138,7 +118,7 @@ EMB_NAMESPACE_START
 
 // ===== Asserts =====
 // TODO
-#define EMB_ASSERT_STATIC(expr, msg, ...) static_assert((expr), (msg))
+#define EMB_ASSERT_STATIC(expr, msg, ...) static_assert((expr)) // add a custom message too somehow. Msg only avail for C++26
 #define EMB_ASSERT_HARD(expr, msg, ...) assert((expr))
 #define EMB_ASSERT_SOFT(expr, msg, ...) \
     if (expr) \

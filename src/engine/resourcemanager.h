@@ -31,17 +31,19 @@ EMB_NAMESPACE_START
 
 using embRawPointer = void*;
 using embResourceGuid = embU32;
+using embResourceTypeGuid = embU32;
 
-constexpr embU32 RESOURCEMANAGER_HANDLE_SIZE_BITS = 32;
-constexpr embU32 RESOURCEMANAGER_TYPE_INDEX_BITS = 6; // 64 possible resource types
-constexpr embU32 RESOURCEMANAGER_TYPE_COUNT = PowerIntUnsigned((embU32)2, RESOURCEMANAGER_TYPE_INDEX_BITS);
+constexpr embU32 RESHDL_TYPE_INDEX_BITS = 6; // 64 possible resource types
+constexpr embU32 RESHDL_SLOT_INDEX_BITS = 10; // 1024 possible resources of each type in data array at a time
+constexpr embU32 RESHDL_PARITY_BITS = 32 - RESHDL_TYPE_INDEX_BITS - RESHDL_SLOT_INDEX_BITS; // Target 32 bit size for RESHDL
+constexpr embU32 RESMGR_RESOURCE_COUNT = PowerIntUnsigned((embU32)2, RESHDL_SLOT_INDEX_BITS); // 1024, same as above
+constexpr embU32 RESMGR_INVALID_SLOT = embU32_MAX;
 
-constexpr embU32 RESOURCEMANAGER_SLOT_INDEX_BITS = 10; // 1024 possible resources of each type in data array at a time
-constexpr embU32 RESOURCEMANAGER_SLOT_COUNT = PowerIntUnsigned((embU32)2, RESOURCEMANAGER_SLOT_INDEX_BITS);
-constexpr embU32 RESOURCEMANAGER_PARITY_BITS = RESOURCEMANAGER_HANDLE_SIZE_BITS - RESOURCEMANAGER_TYPE_INDEX_BITS - RESOURCEMANAGER_SLOT_INDEX_BITS;
+EMB_ASSERT_STATIC(RESHDL_PARITY_BITS <= 64, "Parity takes up too much bits, check for underflow!");
 
-constexpr embU32 RESOURCEMANAGER_RESOURCE_COUNT = 2048;
-constexpr embU32 INVALID_SLOT = embU32_MAX;
+//-------------------------------------------------------------------//
+//                                 Enum                              //
+//-------------------------------------------------------------------//
 
 enum class ResourceType : embU8
 {
@@ -62,6 +64,27 @@ enum class ResourceType : embU8
 
     ENUM_COUNT
 };
+EMB_ASSERT_STATIC((embU32)ResourceType::ENUM_COUNT <= PowerIntUnsigned((embU32)2, RESHDL_TYPE_INDEX_BITS),
+                  "ResourceType count exceeds what RESHDL_TYPE_INDEX_BITS can support, consider increasing RESHDL_TYPE_INDEX_BITS");
+
+//-------------------------------------------------------------------//
+//                            ResourceHandle                         //
+//-------------------------------------------------------------------//
+
+// Handles are RUNTIME-ONLY references to raw pointers.
+// Handles ALWAYS assume the data they point to is correct.
+struct ResourceHandle
+{
+    ResourceHandle(); // ADD REF COUNTER
+    ~ResourceHandle(); // decrement ref counter
+
+    void* GetData() const noexcept;
+
+  private:
+    embU16 m_TypeIndex : RESHDL_TYPE_INDEX_BITS;
+    embU16 m_SlotIndex : RESHDL_SLOT_INDEX_BITS;
+    EMB_IFDEF_VALIDATE_RESMGR(embU16 m_Parity : RESHDL_PARITY_BITS);
+};
 
 //-------------------------------------------------------------------//
 //                           ResourceStore                           //
@@ -74,12 +97,12 @@ class ResourceStore
   public:
     using ResourceSlotIndex = embU32;
 
-    embRawPointer GetResourceData(ResourceType resType, ResourceSlotIndex slot) const noexcept
+    embRawPointer GetResourceData(const ResourceType resType, const ResourceSlotIndex slot) const noexcept
     {
         EMB_ASSERT_HARD(resType < ResourceType::ENUM_COUNT,
                         "resType out of range");
-        EMB_ASSERT_HARD(slot < RESOURCEMANAGER_RESOURCE_COUNT,
-                        "resource slot index out of range");
+        EMB_ASSERT_HARD(slot < RESMGR_RESOURCE_COUNT,
+                        "ResourceSlotIndex out of range");
 
         // check that the corresponding m_PointerGuids is not 0
         EMB_IFDEF_VALIDATE_RESMGR(EMB_ASSERT_HARD(
@@ -89,13 +112,28 @@ class ResourceStore
         return m_Pointers[(embSizeT)resType][slot]; // fast
     }
 
-    // Warning: Does not remove the allocated data. Only removes the related entires in this class.
-    void RemoveResourceDataEntry(ResourceType resType, ResourceSlotIndex slot) noexcept
+    ResourceSlotIndex GetResourceDataSlotFromGuid(const ResourceType resType, const embResourceGuid resGuid) const noexcept
     {
         EMB_ASSERT_HARD(resType < ResourceType::ENUM_COUNT,
                         "resType out of range");
-        EMB_ASSERT_HARD(slot < RESOURCEMANAGER_RESOURCE_COUNT,
-                        "resource slot index out of range");
+
+        for (embU32 i = 0; i < RESMGR_RESOURCE_COUNT; i++)
+        {
+            if (m_PointerGuids[(embSizeT)resType][i] == resGuid)
+            {
+                return i;
+            }
+        }
+        return RESMGR_INVALID_SLOT;
+    }
+
+    // Warning: Does not remove the allocated data. Only removes the related entires in this class.
+    void RemoveResourceDataEntry(const ResourceType resType, const ResourceSlotIndex slot) noexcept
+    {
+        EMB_ASSERT_HARD(resType < ResourceType::ENUM_COUNT,
+                        "resType out of range");
+        EMB_ASSERT_HARD(slot < RESMGR_RESOURCE_COUNT,
+                        "ResourceSlotIndex out of range");
 
         // check for double free
         EMB_IFDEF_VALIDATE_RESMGR(EMB_ASSERT_HARD(
@@ -106,34 +144,21 @@ class ResourceStore
         m_Pointers[(embSizeT)resType][slot] = nullptr;
     }
 
-    bool CheckResourceDataExistsFromGuid(ResourceType resType, embResourceGuid resGuid) const noexcept
-    {
-        EMB_ASSERT_HARD(resType < ResourceType::ENUM_COUNT,
-                        "resType out of range");
-
-        for (embU32 i = 0; i < RESOURCEMANAGER_RESOURCE_COUNT; i++)
-        {
-            if (m_PointerGuids[(embSizeT)resType][i] == resGuid)
-            {
-                return true;
-            }
-        }
-        return false;
-    }
-
     // Adds new entry to the store.
-    void SetNewResourceData(ResourceType resType, embResourceGuid resGuid, embRawPointer ptr) noexcept
+    void AddNewResourceData(const ResourceType resType, const embResourceGuid resGuid, const embRawPointer ptr) noexcept
     {
         EMB_ASSERT_HARD(resType < ResourceType::ENUM_COUNT,
                         "resType out of range");
+        EMB_ASSERT_HARD(ptr != nullptr,
+                        "cannot set nullptr as resource!");
 
         // iF resource is already in store, error.
         EMB_IFDEF_VALIDATE_RESMGR(EMB_ASSERT_HARD(
-            !CheckResourceDataExistsFromGuid(resType, resGuid),
+            GetResourceDataSlotFromGuid(resType, resGuid) == RESMGR_INVALID_SLOT,
             "attempted to set new resource while it is already in store"));
 
         // Find new slot and set.
-        for (embU32 i = 0; i < RESOURCEMANAGER_RESOURCE_COUNT; i++)
+        for (embU32 i = 0; i < RESMGR_RESOURCE_COUNT; i++)
         {
             if (m_PointerGuids[(embSizeT)resType][i] == 0)
             {
@@ -152,44 +177,57 @@ class ResourceStore
                         "unable to SetNewResourceData, ran out of slots! consider increasing RESOURCEMANAGER_RESOURCE_COUNT.");
     }
 
-    using PointerArray = embFixedSizeArray<embRawPointer, RESOURCEMANAGER_RESOURCE_COUNT>;
-    embFixedSizeArray<PointerArray, (embU64)ResourceType::ENUM_COUNT> m_Pointers;
-
-    using GuidArray = embFixedSizeArray<embResourceGuid, RESOURCEMANAGER_RESOURCE_COUNT>;
-    embFixedSizeArray<GuidArray, (embU64)ResourceType::ENUM_COUNT> m_PointerGuids;
-};
-
-
-//-------------------------------------------------------------------//
-//                            ResourceHandle                         //
-//-------------------------------------------------------------------//
-
-// Handles are RUNTIME-ONLY references to raw pointers.
-// Handles ALWAYS assume the data they point to is correct.
-// Validation handling only happens during Handle Creation (From ResourceManager), and assuming that
-// ResourceStore's create and delete are working properly according to ResourceHandle's REF COUNTING.
-template <typename T>
-struct ResourceHandle
-{
-    ResourceHandle(); // ADD REF COUNTER
-    ~ResourceHandle(); // decrement ref counter
-
-    T* get() const noexcept
+    // Modifies existing data.
+    // Do not allow modification of empty slots.
+    void SetNewResourceData(const ResourceType resType, const ResourceSlotIndex slot, const embRawPointer ptr) noexcept
     {
-#ifdef EMB_DEF_VALIDATE_RESMGR
-        // check if the current slot is the same as this resource handle's resourceId
-        // If not, means data has been unloaded or not loaded. error out.
-        if (ResourceStoreLookup::GetValue(m_TypeIndex, m_SlotIndex) !=)
-            Breakpoint();
-#endif
-        return (T*)ResourcePtrStore::GetEntryData(gResourceStores[m_TypeIndex], m_SlotIndex);
+        EMB_ASSERT_HARD(resType < ResourceType::ENUM_COUNT,
+                        "resType out of range");
+        EMB_ASSERT_HARD(slot < RESMGR_RESOURCE_COUNT,
+                        "ResourceSlotIndex out of range");
+        EMB_ASSERT_HARD(ptr != nullptr,
+                        "cannot set nullptr as resource!");
+
+        // iF target slot is empty, don't allow modification
+        EMB_IFDEF_VALIDATE_RESMGR(EMB_ASSERT_HARD(
+            m_PointerGuids[(embSizeT)resType][slot] != 0,
+            "attempted to modify slot that has no data yet. Only allow modification of slots returned by AddNewResourceData"));
+
+        m_Pointers[(embSizeT)resType][slot] = ptr;
     }
 
-    T& operator->() const noexcept { return *get(); }
+#ifdef EMB_DEF_VALIDATE_RESMGR
+    embU16 GetParityData(const ResourceType resType, const ResourceSlotIndex slot) const noexcept
+    {
+        EMB_ASSERT_HARD(resType < ResourceType::ENUM_COUNT,
+                        "resType out of range");
+        EMB_ASSERT_HARD(slot < RESMGR_RESOURCE_COUNT,
+                        "ResourceSlotIndex out of range");
 
-  public:
-    embU32 m_TypeIndex : RESOURCEMANAGER_TYPE_INDEX_BITS;
-    embU32 m_SlotIndex : RESOURCEMANAGER_SLOT_INDEX_BITS;
+        return m_Parity[(embSizeT)resType][slot];
+    }
+
+    void SetParityData(const ResourceType resType, const ResourceSlotIndex slot, const embU16 parityVal) noexcept
+    {
+        EMB_ASSERT_HARD(resType < ResourceType::ENUM_COUNT,
+                        "resType out of range");
+        EMB_ASSERT_HARD(slot < RESMGR_RESOURCE_COUNT,
+                        "ResourceSlotIndex out of range");
+
+        m_Parity[(embSizeT)resType][slot] = parityVal;
+    }
+#endif
+
+    using PointerArray = embFixedSizeArray<embRawPointer, RESMGR_RESOURCE_COUNT>;
+    embFixedSizeArray<PointerArray, (embU64)ResourceType::ENUM_COUNT> m_Pointers {};
+
+    using GuidArray = embFixedSizeArray<embResourceGuid, RESMGR_RESOURCE_COUNT>;
+    embFixedSizeArray<GuidArray, (embU64)ResourceType::ENUM_COUNT> m_PointerGuids {};
+
+#ifdef EMB_DEF_VALIDATE_RESMGR
+    using ParityArray = embFixedSizeArray<embU16, RESMGR_RESOURCE_COUNT>;
+    embFixedSizeArray<ParityArray, (embU64)ResourceType::ENUM_COUNT> m_Parity {};
+#endif
 };
 
 //-------------------------------------------------------------------//
@@ -199,8 +237,14 @@ struct ResourceHandle
 // Manager that handles storing and lookup of resources
 class ResourceManager
 {
-  private:
   public:
+    EMB_CLASS_SINGLETON_MACRO(ResourceManager)
+
+    ResourceStore& GetResourceStore() noexcept
+    {
+        return m_ResourceStore;
+    }
+
     // Prior to loading Metadata, assets need to be packed/managed first.
     // at least, the generation of metadata needs to be done and saved somewhere.
 
@@ -213,29 +257,14 @@ class ResourceManager
         // - resource type hash
     }
 
-    // for quick and dirty loading. GUIDs should be preferred.
-    // used when no Editor to handle GUIDs is available yet.
-    embResourceTid NameToGUID(embHash64 pathHash)
-    {
-        return 0;
-    }
-
-    template <typename T>
-    ResourceHandle<T> GetResourceHandle(embResourceTid resourceGUID)
-    {
-        // check if GUID exists or not. If not exist, error.
-        // Else,
-        // Create handle and return.
-        ResourceHandle<T> ret;
-
-        return ret;
-    }
+    ResourceHandle GetResourceHandle(embResourceTypeGuid typeGuid, embResourceGuid resGuid) noexcept;
 
   public:
   private:
-    std::vector<embHash64> m_ResourceStoreHashes; // each hash here corresponds to each elem of m_ResourceStores. Used for lookup.
-    //std::vector<std::unique_ptr<IResourceStore>> m_ResourceStores;
+    ResourceStore m_ResourceStore;
 };
+
+
 
 // Type ID shit lookup
 // store an array of typeids derived from locally hashing type names
