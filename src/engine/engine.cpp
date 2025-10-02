@@ -4,7 +4,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "util/defines.h"
+#include "util/macros.h"
 
 #include "engine.h"
 #include "graphics.h"

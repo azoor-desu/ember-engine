@@ -14,11 +14,11 @@
 
 #ifdef EMB_USE_GLM
 
-#include "vec_macros.h"
-#include "wrapper_glm_common.h"
+#    include "macros_vec_mtx.h"
+#    include "wrapper_glm_common.h"
 
-#include "glm/ext/vector_float2.hpp"
-#include "glm/ext/vector_int2.hpp"
+#    include "glm/ext/vector_float2.hpp"
+#    include "glm/ext/vector_int2.hpp"
 
 EMB_NAMESPACE_START
 

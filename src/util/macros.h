@@ -1,5 +1,16 @@
 #pragma once
 
+// ===== Misc ====
+#ifndef TRUE
+#    define TRUE 1
+#endif
+#ifndef FALSE
+#    define FALSE 0
+#endif
+#ifndef EMB_UNUSED_PARAM
+#    define EMB_UNUSED_PARAM(P) (P)
+#endif
+
 // ===== Namespace ====
 #define EMB_NAMESPACE_START \
     namespace ember \
@@ -34,15 +45,3 @@
         else \
         {}
 #endif
-
-
-// https://stackoverflow.com/a/48820063
-
-#define DECLARE_ENUM_WITH_TYPE(className, typeName, ...) \
-    enum class className : typeName \
-    { \
-        __VA_ARGS__ \
-    }; \
-    std::unordered_map<typeName, std::string> className##MapName(generateEnumMap<typeName>(#__VA_ARGS__));
-
-#define DECLARE_ENUM(className, ...) DECLARE_ENUM_WITH_TYPE(className, int32_t, __VA_ARGS__)

@@ -2,6 +2,7 @@
 #include "util/containers.h"
 #include "util/hash.h"
 #include "util/macros.h"
+#include "util/macros_util.h"
 #include "util/math.h"
 #include "util/str.h"
 #include "util/types.h"
@@ -10,10 +11,13 @@
 
 #include <array>
 #include <cmath>
+#include <cstdarg>
 #include <cstddef>
 #include <initializer_list>
 #include <memory>
 #include <set>
+#include <unistd.h>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -45,27 +49,37 @@ EMB_ASSERT_STATIC(RESHDL_PARITY_BITS <= 64, "Parity takes up too much bits, chec
 //                                 Enum                              //
 //-------------------------------------------------------------------//
 
+// Declared using X-macro
+#define RESOURCE_TYPE_LIST(X) \
+    X(ResourceType, SHADER_VERTEX) \
+    X(ResourceType, SHADER_FRAG) \
+    X(ResourceType, SHADER_PROGRAM) \
+    X(ResourceType, TEXTURE_SPRITE) \
+    X(ResourceType, TEXTURE_ALBEDO) \
+    X(ResourceType, AUDIO) \
+    X(ResourceType, FONT_TTF) \
+    X(ResourceType, SCENE)
+
 enum class ResourceType : embU8
 {
-    SHADER_VERTEX = 0,
-    SHADER_FRAG,
-    // SHADER_COMPUTE,
-    SHADER_PROGRAM,
-
-    TEXTURE_SPRITE,
-    TEXTURE_ALBEDO,
-
-    AUDIO,
-    // MODEL_RAW,
-    // MODEL_FBX, // or mesh...?
-    FONT_TTF,
-    SCENE, // stores collections of gameobjects
-    // OPENGL_VAO, // ??? Maybe model will do...?
-
-    ENUM_COUNT
+    RESOURCE_TYPE_LIST(EMB_X_ENUM_VAL)
+        ENUM_COUNT
 };
 EMB_ASSERT_STATIC((embU32)ResourceType::ENUM_COUNT <= PowerIntUnsigned((embU32)2, RESHDL_TYPE_INDEX_BITS),
                   "ResourceType count exceeds what RESHDL_TYPE_INDEX_BITS can support, consider increasing RESHDL_TYPE_INDEX_BITS");
+
+inline embStrView EnumToStr(ResourceType val)
+{
+    switch (val)
+    {
+        RESOURCE_TYPE_LIST(EMB_X_ENUM_STR_CONVERSION)
+    default:
+        break;
+    }
+    std::unreachable();
+}
+
+#undef RESOURCE_TYPE_LIST
 
 //-------------------------------------------------------------------//
 //                            ResourceHandle                         //

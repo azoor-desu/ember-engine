@@ -13,17 +13,17 @@
 
 #ifdef EMB_USE_GLM
 
-#include "vec_macros.h"
-#include "wrapper_glm_common.h"
+#    include "macros_vec_mtx.h"
+#    include "wrapper_glm_common.h"
 
-#include <glm/geometric.hpp> // all the GLSL geometry functions: dot, cross, reflect, etc.
-#include <glm/vec2.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
+#    include <glm/geometric.hpp> // all the GLSL geometry functions: dot, cross, reflect, etc.
+#    include <glm/vec2.hpp>
+#    include <glm/vec3.hpp>
+#    include <glm/vec4.hpp>
 
-#include <glm/common.hpp> // all the GLSL common functions: abs, min, mix, isnan, fma, etc.
-#include <glm/exponential.hpp> // all the GLSL exponential functions: pow, log, exp2, sqrt, etc.
-#include <glm/trigonometric.hpp> // all the GLSL trigonometric functions: radians, cos, asin, etc.
+#    include <glm/common.hpp> // all the GLSL common functions: abs, min, mix, isnan, fma, etc.
+#    include <glm/exponential.hpp> // all the GLSL exponential functions: pow, log, exp2, sqrt, etc.
+#    include <glm/trigonometric.hpp> // all the GLSL trigonometric functions: radians, cos, asin, etc.
 
 EMB_NAMESPACE_START
 

@@ -3,7 +3,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "util/defines.h"
+#include "util/macros.h"
 #include "util/types.h"
 
 #include "window.h"

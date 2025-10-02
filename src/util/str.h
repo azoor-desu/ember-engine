@@ -1,6 +1,5 @@
 #pragma once
 
-#include "defines.h"
 #include "types.h"
 #include <string>
 #include <string_view>

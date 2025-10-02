@@ -14,13 +14,13 @@
 // Pick implementation to use.
 #ifdef EMB_USE_GLM
 
-#include "matrix_macros.h"
-#include "wrapper_glm_common.h"
+#    include "macros_vec_mtx.h"
+#    include "wrapper_glm_common.h"
 
-#include <glm/mat2x2.hpp>
-#include <glm/mat3x3.hpp>
-#include <glm/mat4x4.hpp>
-#include <glm/matrix.hpp> // all the GLSL matrix functions: transpose, inverse, etc.
+#    include <glm/mat2x2.hpp>
+#    include <glm/mat3x3.hpp>
+#    include <glm/mat4x4.hpp>
+#    include <glm/matrix.hpp> // all the GLSL matrix functions: transpose, inverse, etc.
 
 EMB_NAMESPACE_START
 

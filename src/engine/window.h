@@ -1,6 +1,5 @@
 #pragma once
 
-#include "util/defines.h"
 #include "util/str.h"
 #include "util/types.h"
 #include "util/vec2_coord_container.h"

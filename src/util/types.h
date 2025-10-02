@@ -1,8 +1,9 @@
 #pragma once
 
-#include "defines.h"
 #include <cstdint> // for int types
 #include <limits> // for numeric_limits
+
+#include "macros.h"
 
 EMB_NAMESPACE_START
 

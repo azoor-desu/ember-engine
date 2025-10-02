@@ -2,7 +2,6 @@
 
 #include <chrono>
 
-#include "util/defines.h"
 #include "util/macros.h"
 #include "util/types.h"
 
