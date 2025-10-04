@@ -2,54 +2,86 @@
 #include <cstdarg>
 #include <unordered_map>
 
+#include "hash.h"
 #include "macros.h"
 #include "str.h"
 #include "types.h"
 
 EMB_NAMESPACE_START
 
-inline const std::unordered_map<int, embStr> CreateEnumStringMap(int count, ...)
-{
-    std::unordered_map<int, std::string> ret {};
-
-    va_list args;
-    va_start(args, count);
-
-    for (int i = 0; i < count; i++)
-    {
-        std::string str = va_arg(args, const char*);
-        ret.insert({i, str});
-    }
-
-    va_end(args);
-    return ret;
-}
-
 // ========== X-macro Functions ==========
-#define EMB_X_ENUM_VAL(className, valName) valName,
-#define EMB_X_ENUM_STR_CONVERSION(className, valName) \
-    case className::valName: \
+
+// List populator helpers
+#define _EMB_X_INSERT_ENUM_VAL(enumClassName, valName) valName,
+
+#define _EMB_X_INSERT_ENUM_SWITCH_STR(enumClassName, valName) \
+    case enumClassName::valName: \
         return #valName;
 
-// Usage:
-// #define RESOURCE_TYPE_LIST(X) \
-//     X(FooBar, ONE) \
-//     X(FooBar, TWO) \
-//     X(FooBar, THREE)
-// enum class ResourceType : embU8
-// {
-//     RESOURCE_TYPE_LIST(EMB_X_ENUM_VAL)
-//         ENUM_COUNT
-// };
-// inline embStrView EnumToStr(ResourceType val)
-// {
-//     switch (val)
-//     {
-//         RESOURCE_TYPE_LIST(EMB_X_ENUM_STR_CONVERSION)
-//     }
-//     std::unreachable();
-// }
-// #undef RESOURCE_TYPE_LIST
+#define _EMB_X_INSERT_ENUM_HASH_HELPER(classValName) \
+    case classValName: \
+        return Hash::GenerateHash(#classValName);
 
+#define _EMB_X_INSERT_ENUM_HASH_SWITCH_STR(enumClassName, valName) \
+    _EMB_X_INSERT_ENUM_HASH_HELPER(enumClassName::valName)
+
+#define _EMB_X_INSERT_ENUM_FROMHASH_HELPER(classValName) \
+    case Hash::GenerateHash(#classValName): \
+        return classValName;
+
+#define _EMB_X_INSERT_ENUM_FROMHASH_SWITCH_STR(enumClassName, valName) \
+    _EMB_X_INSERT_ENUM_FROMHASH_HELPER(enumClassName::valName)
+
+// Builder: Enum
+#define EMB_X_DEF_ENUM(enumClassName, enumSizeType, TYPE_LIST) \
+    enum class enumClassName : enumSizeType \
+    { \
+        TYPE_LIST(_EMB_X_INSERT_ENUM_VAL) \
+            ENUM_COUNT \
+    };
+
+// Builder: Enum -> Str
+#define EMB_X_DEF_ENUM_TO_STR(enumClassName, TYPE_LIST) \
+    inline constexpr embStrView Enum##enumClassName##ToStr(enumClassName val) \
+    { \
+        switch (val) \
+        { \
+            TYPE_LIST(_EMB_X_INSERT_ENUM_SWITCH_STR) \
+        default: \
+            break; \
+        } \
+        std::unreachable(); \
+    }
+
+// Builder: Enum -> Hash/GUID
+#define EMB_X_DEF_ENUM_TO_HASH(enumClassName, TYPE_LIST) \
+    inline constexpr embHash EnumResourceTypeToHash(ResourceType val) \
+    { \
+        switch (val) \
+        { \
+            TYPE_LIST(_EMB_X_INSERT_ENUM_HASH_SWITCH_STR) \
+        default: \
+            break; \
+        } \
+        std::unreachable(); \
+    }
+
+// Builder: Hash/GUID -> Enum
+#define EMB_X_DEF_ENUM_FROM_HASH(enumClassName, TYPE_LIST) \
+    inline constexpr ResourceType EnumResourceTypeFromHash(embHash val) \
+    { \
+        switch (val) \
+        { \
+            TYPE_LIST(_EMB_X_INSERT_ENUM_FROMHASH_SWITCH_STR) \
+        default: \
+            break; \
+        } \
+        std::unreachable(); \
+    }
+
+// Getters
+#define EMB_X_ENUM_TO_STR(enumClassName, enumVal) Enum##enumClassName##ToHash(enumVal)
+#define EMB_X_ENUM_TO_HASH(enumClassName, enumVal) Enum##enumClassName##ToHash(enumVal)
+#define EMB_X_ENUM_FROM_HASH(enumClassName, hashVal) Enum##enumClassName##FromHash(hashVal)
 
 EMB_NAMESPACE_END

@@ -1,6 +1,7 @@
 #include "pch-engine.h"
 
 #include "util/macros.h"
+#include "util/macros_util.h"
 #include "util/types.h"
 
 #include "resourcemanager.h"
@@ -27,22 +28,17 @@ void* ResourceHandle::GetData() const noexcept
 
 ResourceHandle ResourceManager::GetResourceHandle(embResourceTypeGuid typeGuid, embResourceGuid resGuid) noexcept
 {
-    ResourceHandle ret;
+    ResourceType resType = EMB_X_ENUM_FROM_HASH(ResourceType, typeGuid);
+    ResourceStore::ResourceSlotIndex slotIndex = m_ResourceStore.GetResourceDataSlotFromGuid(resType, resGuid);
 
-    // determine what ResourceType this guy is.
-    // damn i think i fucked myself with using enums as ResourceType instead of hashes...
-    // I need to map the internal enum with external ResourceGuid
-    // I need some translation table that can do this both ways.
-    // Due to Enum having to change frequently, translation table needs to be generated on the fly.
-    // I could just hash the string of the enum cos that's the only consistent thing.
-    // Build a feature for the translation table so that i can manually inject custom mappings in case of "migrations"
-    // e.g. changing name from AUDIO to AUDIO_GENERAL. I want to map all of the old AUDIO hashes into AUDIO_GENERAL.
+    // if resource is not loaded, load it and use new slot.
+    if (slotIndex == RESMGR_INVALID_SLOT)
+    {
+        embRawPointer newResource = LoadResource(typeGuid, resGuid);
+        slotIndex = m_ResourceStore.AddNewResourceData(resType, resGuid, newResource);
+    }
 
-
-
-    ResourceStore::ResourceSlotIndex slotIndex = m_ResourceStore.GetResourceDataSlotFromGuid(const ResourceType resType, resGuid);
-
-    return ret;
+    return ResourceHandle(resType, slotIndex);
 }
 
 EMB_NAMESPACE_END

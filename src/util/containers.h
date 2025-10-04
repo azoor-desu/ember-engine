@@ -2,6 +2,7 @@
 
 #include "types.h"
 #include <array>
+#include <unordered_map>
 #include <vector>
 
 // to split this up... too many containers!
@@ -29,8 +30,8 @@ using embQueueBuffer = std::vector<T>;
 template<typename T>
 using embCircularBuffer = std::vector<T>;
 
-template<typename T>
-using embMap = std::vector<T>;
+template <typename Key, typename Value>
+using embMap = std::unordered_map<Key, Value>;
 
 template<typename T>
 using embList = std::vector<T>;

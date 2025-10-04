@@ -11,8 +11,6 @@
 #include "util/types.h"
 #include "window.h"
 
-
-
 EMB_NAMESPACE_START
 
 void Engine::Init()
@@ -27,17 +25,7 @@ void Engine::Init()
     // Rest of Engine init logic here
     // Registering RESOURCE stuffs.
 
-    embU32 res = ResourcePointerList::GetNewEntryIndex(gResourceStores[0]);
-    printf("res: %d\n", res);
-    res = ResourcePointerList::GetNewEntryIndex(gResourceStores[0]);
-    printf("res: %d\n", res);
-    res = ResourcePointerList::GetNewEntryIndex(gResourceStores[0]);
-    printf("res: %d\n", res);
-
-    ResourcePointerList::ReleaseEntry(gResourceStores[0], 0);
-    res = ResourcePointerList::GetNewEntryIndex(gResourceStores[0]);
-    printf("should be 0: %d\n", res);
-
+    ResourceHandle test = ResourceManager::Instance().GetResourceHandle(1234, 1234);
 
     // Post-init stuff
     EngineClock::Instance()

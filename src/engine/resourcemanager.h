@@ -49,8 +49,8 @@ EMB_ASSERT_STATIC(RESHDL_PARITY_BITS <= 64, "Parity takes up too much bits, chec
 //                                 Enum                              //
 //-------------------------------------------------------------------//
 
-// Declared using X-macro
-#define RESOURCE_TYPE_LIST(X) \
+// Create enum, tostr and tohash using X-macro
+#define X_LIST_RESOURCETYPE(X) \
     X(ResourceType, SHADER_VERTEX) \
     X(ResourceType, SHADER_FRAG) \
     X(ResourceType, SHADER_PROGRAM) \
@@ -60,26 +60,15 @@ EMB_ASSERT_STATIC(RESHDL_PARITY_BITS <= 64, "Parity takes up too much bits, chec
     X(ResourceType, FONT_TTF) \
     X(ResourceType, SCENE)
 
-enum class ResourceType : embU8
-{
-    RESOURCE_TYPE_LIST(EMB_X_ENUM_VAL)
-        ENUM_COUNT
-};
+EMB_X_DEF_ENUM(ResourceType, embU8, X_LIST_RESOURCETYPE)
 EMB_ASSERT_STATIC((embU32)ResourceType::ENUM_COUNT <= PowerIntUnsigned((embU32)2, RESHDL_TYPE_INDEX_BITS),
                   "ResourceType count exceeds what RESHDL_TYPE_INDEX_BITS can support, consider increasing RESHDL_TYPE_INDEX_BITS");
 
-inline embStrView EnumToStr(ResourceType val)
-{
-    switch (val)
-    {
-        RESOURCE_TYPE_LIST(EMB_X_ENUM_STR_CONVERSION)
-    default:
-        break;
-    }
-    std::unreachable();
-}
+EMB_X_DEF_ENUM_TO_STR(ResourceType, X_LIST_RESOURCETYPE)
+EMB_X_DEF_ENUM_TO_HASH(ResourceType, X_LIST_RESOURCETYPE)
+EMB_X_DEF_ENUM_FROM_HASH(ResourceType, X_LIST_RESOURCETYPE)
 
-#undef RESOURCE_TYPE_LIST
+#undef X_LIST_RESOURCETYPE
 
 //-------------------------------------------------------------------//
 //                            ResourceHandle                         //
@@ -89,7 +78,12 @@ inline embStrView EnumToStr(ResourceType val)
 // Handles ALWAYS assume the data they point to is correct.
 struct ResourceHandle
 {
-    ResourceHandle(); // ADD REF COUNTER
+  private:
+    ResourceHandle(ResourceType type, embU16 slot)
+        : m_TypeIndex {(embU16)type}
+        , m_SlotIndex {slot}
+    {} // ADD REF COUNTER
+  public:
     ~ResourceHandle(); // decrement ref counter
 
     void* GetData() const noexcept;
@@ -98,6 +92,11 @@ struct ResourceHandle
     embU16 m_TypeIndex : RESHDL_TYPE_INDEX_BITS;
     embU16 m_SlotIndex : RESHDL_SLOT_INDEX_BITS;
     EMB_IFDEF_VALIDATE_RESMGR(embU16 m_Parity : RESHDL_PARITY_BITS);
+
+    // global map just to count handle references
+    static embMap<int, int> hehe;
+
+    friend class ResourceManager;
 };
 
 //-------------------------------------------------------------------//
@@ -159,7 +158,7 @@ class ResourceStore
     }
 
     // Adds new entry to the store.
-    void AddNewResourceData(const ResourceType resType, const embResourceGuid resGuid, const embRawPointer ptr) noexcept
+    ResourceSlotIndex AddNewResourceData(const ResourceType resType, const embResourceGuid resGuid, const embRawPointer ptr) noexcept
     {
         EMB_ASSERT_HARD(resType < ResourceType::ENUM_COUNT,
                         "resType out of range");
@@ -182,13 +181,13 @@ class ResourceStore
 
                 m_PointerGuids[(embSizeT)resType][i] = resGuid;
                 m_Pointers[(embSizeT)resType][i] = ptr;
-                break;
+                return i;
             }
         }
-
         // crash if no more slots
         EMB_ASSERT_HARD(false,
                         "unable to SetNewResourceData, ran out of slots! consider increasing RESOURCEMANAGER_RESOURCE_COUNT.");
+        return RESMGR_INVALID_SLOT;
     }
 
     // Modifies existing data.
@@ -273,7 +272,15 @@ class ResourceManager
 
     ResourceHandle GetResourceHandle(embResourceTypeGuid typeGuid, embResourceGuid resGuid) noexcept;
 
-  public:
+  private:
+    // Loads raw data according to different implementations.
+    // Resource lifetime is NOT managed by this function. Caller will manage.
+    void* LoadResource(embResourceTypeGuid typeGuid, embResourceGuid resGuid)
+    {
+        // TODO grabs the loaded metadata, load data into game memory from asset files
+        return nullptr;
+    }
+
   private:
     ResourceStore m_ResourceStore;
 };
