@@ -4,6 +4,7 @@
 
 #include "hash.h"
 #include "macros.h"
+#include "macros_debug.h"
 #include "str.h"
 #include "types.h"
 
@@ -48,9 +49,10 @@ EMB_NAMESPACE_START
         { \
             TYPE_LIST(_EMB_X_INSERT_ENUM_SWITCH_STR) \
         default: \
+            EMB_ASSERT_HARD(false, "Invalid value provided"); \
             break; \
         } \
-        std::unreachable(); \
+        EMB_PATH_UNREACHABLE \
     }
 
 // Builder: Enum -> Hash/GUID
@@ -61,9 +63,10 @@ EMB_NAMESPACE_START
         { \
             TYPE_LIST(_EMB_X_INSERT_ENUM_HASH_SWITCH_STR) \
         default: \
+            EMB_ASSERT_HARD(false, "Invalid value provided"); \
             break; \
         } \
-        std::unreachable(); \
+        EMB_PATH_UNREACHABLE \
     }
 
 // Builder: Hash/GUID -> Enum
@@ -74,9 +77,10 @@ EMB_NAMESPACE_START
         { \
             TYPE_LIST(_EMB_X_INSERT_ENUM_FROMHASH_SWITCH_STR) \
         default: \
+            EMB_ASSERT_HARD(false, "Invalid value provided"); \
             break; \
         } \
-        std::unreachable(); \
+        EMB_PATH_UNREACHABLE \
     }
 
 // Getters

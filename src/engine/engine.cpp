@@ -25,7 +25,7 @@ void Engine::Init()
     // Rest of Engine init logic here
     // Registering RESOURCE stuffs.
 
-    ResourceHandle test = ResourceManager::Instance().GetResourceHandle(1234, 1234);
+    ResourceHandle test = ResourceManager::Instance().GetResourceHandle(Hash::GenerateHash("ResourceType::SCENE"), 1234);
 
     // Post-init stuff
     EngineClock::Instance()

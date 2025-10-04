@@ -19,7 +19,7 @@ void Graphics::Init()
     glewExperimental = TRUE;
     GLenum err = glewInit();
     if (GLEW_OK != err
-#ifdef EMB_PLATFORM_LINUX
+#ifdef EMB_DEF_LINUX
         // BUG WITH GLFW ON LINUX: https://github.com/nigels-com/glew/issues/417
         // return code somehow returns 4 instead of 0 even if everything is ok.
         && err != 4

@@ -12,6 +12,8 @@ EMB_NAMESPACE_START
 //                            ResourceHandle                         //
 //-------------------------------------------------------------------//
 
+embMap<embU32, embU16> ResourceHandle::s_RefCount {};
+
 void* ResourceHandle::GetData() const noexcept
 {
     // validation: Check if existing store matches GUID.

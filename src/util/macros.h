@@ -28,7 +28,7 @@
     }
 
 // ===== Misc Macro Helpers ====
-#ifdef EMB_DEF_DEBUG
+#ifndef EMB_DEF_OPTIMIZED
 #    define EMB_MACRO_START \
         do \
         {

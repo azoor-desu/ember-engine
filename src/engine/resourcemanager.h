@@ -2,12 +2,11 @@
 #include "util/containers.h"
 #include "util/hash.h"
 #include "util/macros.h"
+#include "util/macros_debug.h"
 #include "util/macros_util.h"
 #include "util/math.h"
 #include "util/str.h"
 #include "util/types.h"
-
-#include "debug.h"
 
 #include <array>
 #include <cmath>
@@ -79,12 +78,51 @@ EMB_X_DEF_ENUM_FROM_HASH(ResourceType, X_LIST_RESOURCETYPE)
 struct ResourceHandle
 {
   private:
-    ResourceHandle(ResourceType type, embU16 slot)
+    ResourceHandle(ResourceType type, embU16 slot) // private default constructor, only "factory" can create
         : m_TypeIndex {(embU16)type}
         , m_SlotIndex {slot}
-    {} // ADD REF COUNTER
+    {
+        // increment ref counter
+        embU32 key = (embU32)slot | ((embU32)type << 16); // hardcode slot to u16
+        s_RefCount[key]++;
+        printf("copyconstructor: ref count for key %u is %u\n", key, s_RefCount[key]);
+    }
+
   public:
-    ~ResourceHandle(); // decrement ref counter
+    ResourceHandle(const ResourceHandle& obj) // copy constructor
+        : m_TypeIndex {(embU16)obj.m_TypeIndex}
+        , m_SlotIndex {obj.m_SlotIndex}
+    {
+        // increment ref counter
+        embU32 key = (embU32)m_SlotIndex | ((embU32)m_TypeIndex << 16); // hardcode slot to u16
+        s_RefCount[key]++;
+        printf("copyassign: ref count for key %u is %u\n", key, s_RefCount[key]);
+    }
+
+    ResourceHandle& operator=(const ResourceHandle& obj) // copy assignment
+    {
+        return *this = ResourceHandle(obj);
+    }
+
+    ResourceHandle(ResourceHandle&& obj) noexcept // move constructor
+        : m_TypeIndex {(embU16)obj.m_TypeIndex}
+        , m_SlotIndex {obj.m_SlotIndex}
+    {}
+
+    ResourceHandle& operator=(ResourceHandle&& obj) noexcept // move assignment
+    {
+        m_TypeIndex = obj.m_TypeIndex;
+        m_SlotIndex = obj.m_SlotIndex;
+        return *this;
+    }
+
+    ~ResourceHandle() // destructor
+    {
+        // decrement ref counter
+        embU32 key = (embU32)m_SlotIndex | ((embU32)m_TypeIndex << 16); // hardcode slot to u16
+        s_RefCount[key]--;
+        printf("destructor: ref count for key %u is %u\n", key, s_RefCount[key]);
+    }
 
     void* GetData() const noexcept;
 
@@ -94,7 +132,7 @@ struct ResourceHandle
     EMB_IFDEF_VALIDATE_RESMGR(embU16 m_Parity : RESHDL_PARITY_BITS);
 
     // global map just to count handle references
-    static embMap<int, int> hehe;
+    static embMap<embU32, embU16> s_RefCount;
 
     friend class ResourceManager;
 };
@@ -278,7 +316,7 @@ class ResourceManager
     void* LoadResource(embResourceTypeGuid typeGuid, embResourceGuid resGuid)
     {
         // TODO grabs the loaded metadata, load data into game memory from asset files
-        return nullptr;
+        return (void*)1234; // temp testing, return something other than nullptr
     }
 
   private:

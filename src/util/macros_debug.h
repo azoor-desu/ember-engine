@@ -1,5 +1,5 @@
 #pragma once
-#include "util/macros.h"
+#include "macros.h"
 #include <cassert>
 
 EMB_NAMESPACE_START
@@ -12,6 +12,8 @@ EMB_NAMESPACE_START
 #else
 #    undef EMB_DEF_RELEASE
 #    define EMB_DEF_RELEASE
+#    undef EMB_DEF_OPTIMIZED
+#    define EMB_DEF_OPTIMIZED
 #endif
 
 // OS
@@ -85,15 +87,23 @@ EMB_NAMESPACE_START
 #endif
 
 #if defined(EMB_DEF_CLANG)
-#    define EMB_OPTIMIZE_OFF _Pragma("clang optimize off")
-#    define EMB_OPTIMIZE_ON _Pragma("clang optimize on")
+#    define EMB_OPTIMIZE_FILE_OFF _Pragma("clang optimize off")
+#    define EMB_OPTIMIZE_FILE_ON _Pragma("clang optimize on")
 #elif defined(EMB_DEF_GCC)
 // Might be wrong
-#    define EMB_OPTIMIZE_OFF _Pragma("GCC optimize(\"O0\")")
-#    define EMB_OPTIMIZE_ON _Pragma("GCC optimize(\"O3\")")
+#    define EMB_OPTIMIZE_FILE_OFF _Pragma("GCC optimize(\"O0\")")
+#    define EMB_OPTIMIZE_FILE_ON _Pragma("GCC optimize(\"O3\")")
 #elif defined(EMB_DEF_MSVC)
-#    define EMB_OPTIMIZE_OFF __pragma(optimize("", off))
-#    define EMB_OPTIMIZE_ON __pragma(optimize("", on))
+#    define EMB_OPTIMIZE_FILE_OFF __pragma(optimize("", off))
+#    define EMB_OPTIMIZE_FILE_ON __pragma(optimize("", on))
+#endif
+
+#if defined(EMB_DEF_OPTIMIZED)
+#    define EMB_PATH_UNREACHABLE std::unreachable();
+#    define EMB_ASSUME_ALWAYS(expr) [[assume((expr))]];
+#else
+#    define EMB_PATH_UNREACHABLE
+#    define EMB_ASSUME_ALWAYS(expr)
 #endif
 
 // ===== Breakpoint ====
@@ -117,11 +127,11 @@ EMB_NAMESPACE_START
 #define EMB_LOG_ERROR_IF(expr, msg, ...)
 
 // ===== Asserts =====
-// TODO
+// TODO add messages
 #define EMB_ASSERT_STATIC(expr, msg, ...) static_assert((expr)) // add a custom message too somehow. Msg only avail for C++26
 #define EMB_ASSERT_HARD(expr, msg, ...) assert((expr))
 #define EMB_ASSERT_SOFT(expr, msg, ...) \
-    if (expr) \
+    if (EMB_BRANCH_UNLIKELY(expr)) \
         EMB_BREAKPOINT();
 
 // ===== Short logic toggles =====
@@ -134,6 +144,11 @@ EMB_NAMESPACE_START
 #    define EMB_IFDEF_RELEASE(code) code
 #else
 #    define EMB_IFDEF_RELEASE(code)
+#endif
+#ifdef EMB_DEF_OPTIMIZED
+#    define EMB_IFDEF_OPTIMIZED(code) code
+#else
+#    define EMB_IFDEF_OPTIMIZED(code)
 #endif
 
 EMB_NAMESPACE_END
