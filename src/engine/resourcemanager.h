@@ -84,8 +84,9 @@ struct ResourceHandle
     {
         // increment ref counter
         embU32 key = (embU32)slot | ((embU32)type << 16); // hardcode slot to u16
+        EMB_ASSERT_HARD(s_RefCount[key] <= PowerIntUnsigned((embU32)2, RESHDL_SLOT_INDEX_BITS), "attempting to increment ref count past max capacity! Consider increasing RESHDL_SLOT_INDEX_BITS");
         s_RefCount[key]++;
-        printf("copyconstructor: ref count for key %u is %u\n", key, s_RefCount[key]);
+        printf("constructor: ref count for key %u is %u\n", key, s_RefCount[key]); // todo remove
     }
 
   public:
@@ -95,8 +96,9 @@ struct ResourceHandle
     {
         // increment ref counter
         embU32 key = (embU32)m_SlotIndex | ((embU32)m_TypeIndex << 16); // hardcode slot to u16
+        EMB_ASSERT_HARD(s_RefCount[key] <= PowerIntUnsigned((embU32)2, RESHDL_SLOT_INDEX_BITS), "attempting to increment ref count past max capacity! Consider increasing RESHDL_SLOT_INDEX_BITS");
         s_RefCount[key]++;
-        printf("copyassign: ref count for key %u is %u\n", key, s_RefCount[key]);
+        printf("copyconstructor/assign: ref count for key %u is %u\n", key, s_RefCount[key]); // todo remove
     }
 
     ResourceHandle& operator=(const ResourceHandle& obj) // copy assignment
@@ -120,8 +122,9 @@ struct ResourceHandle
     {
         // decrement ref counter
         embU32 key = (embU32)m_SlotIndex | ((embU32)m_TypeIndex << 16); // hardcode slot to u16
+        EMB_ASSERT_HARD(s_RefCount[key] > 0, "attempting to decrement ref count when count is already 0!");
         s_RefCount[key]--;
-        printf("destructor: ref count for key %u is %u\n", key, s_RefCount[key]);
+        printf("destructor: ref count for key %u is %u\n", key, s_RefCount[key]); // todo remove
     }
 
     void* GetData() const noexcept;
@@ -316,6 +319,7 @@ class ResourceManager
     void* LoadResource(embResourceTypeGuid typeGuid, embResourceGuid resGuid)
     {
         // TODO grabs the loaded metadata, load data into game memory from asset files
+        printf("Loading resource!\n");
         return (void*)1234; // temp testing, return something other than nullptr
     }
 

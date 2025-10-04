@@ -26,6 +26,12 @@ void Engine::Init()
     // Registering RESOURCE stuffs.
 
     ResourceHandle test = ResourceManager::Instance().GetResourceHandle(Hash::GenerateHash("ResourceType::SCENE"), 1234);
+    {
+        ResourceHandle test2 = test;
+        ResourceHandle test3 = ResourceManager::Instance().GetResourceHandle(Hash::GenerateHash("ResourceType::SCENE"), 1234);
+    }
+
+    printf("pointer is %u\n", (embU64)test.GetData()); // prints 1234
 
     // Post-init stuff
     EngineClock::Instance()
