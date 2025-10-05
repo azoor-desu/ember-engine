@@ -12,7 +12,7 @@ EMB_NAMESPACE_START
 //                            ResourceHandle                         //
 //-------------------------------------------------------------------//
 
-embMap<embU32, embU16> ResourceHandle::s_RefCount {};
+embMap<embU32, embU16> ResourceHandle::s_HandleRefCount {};
 
 void* ResourceHandle::GetData() const noexcept
 {
@@ -27,6 +27,22 @@ void* ResourceHandle::GetData() const noexcept
 //-------------------------------------------------------------------//
 //                            ResourceManager                        //
 //-------------------------------------------------------------------//
+
+ResourceHandle::~ResourceHandle() // destructor
+{
+        // decrement ref counter
+    embU32 key = (embU32)m_SlotIndex | ((embU32)m_TypeIndex << 16); // hardcode slot to u16
+    EMB_ASSERT_HARD(s_HandleRefCount[key] > 0, "attempting to decrement ref count when count is already 0!");
+    s_HandleRefCount[key]--;
+    printf("destructor: ref count for key %u is %u\n", key, s_HandleRefCount[key]); // todo remove
+
+    // If count == 0, unload resource.
+    // TODO implement smarter logic to defer unloading after a little bit longer?
+    if (s_HandleRefCount[key] == 0)
+    {
+        ResourceManager::Instance().UnloadResource((ResourceType)m_TypeIndex, m_SlotIndex);
+    }
+}
 
 ResourceHandle ResourceManager::GetResourceHandle(embResourceTypeGuid typeGuid, embResourceGuid resGuid) noexcept
 {

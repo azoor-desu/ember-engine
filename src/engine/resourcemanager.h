@@ -84,9 +84,9 @@ struct ResourceHandle
     {
         // increment ref counter
         embU32 key = (embU32)slot | ((embU32)type << 16); // hardcode slot to u16
-        EMB_ASSERT_HARD(s_RefCount[key] <= PowerIntUnsigned((embU32)2, RESHDL_SLOT_INDEX_BITS), "attempting to increment ref count past max capacity! Consider increasing RESHDL_SLOT_INDEX_BITS");
-        s_RefCount[key]++;
-        printf("constructor: ref count for key %u is %u\n", key, s_RefCount[key]); // todo remove
+        EMB_ASSERT_HARD(s_HandleRefCount[key] <= PowerIntUnsigned((embU32)2, RESHDL_SLOT_INDEX_BITS), "attempting to increment ref count past max capacity! Consider increasing RESHDL_SLOT_INDEX_BITS");
+        s_HandleRefCount[key]++;
+        printf("constructor: ref count for key %u is %u\n", key, s_HandleRefCount[key]); // todo remove
     }
 
   public:
@@ -96,9 +96,9 @@ struct ResourceHandle
     {
         // increment ref counter
         embU32 key = (embU32)m_SlotIndex | ((embU32)m_TypeIndex << 16); // hardcode slot to u16
-        EMB_ASSERT_HARD(s_RefCount[key] <= PowerIntUnsigned((embU32)2, RESHDL_SLOT_INDEX_BITS), "attempting to increment ref count past max capacity! Consider increasing RESHDL_SLOT_INDEX_BITS");
-        s_RefCount[key]++;
-        printf("copyconstructor/assign: ref count for key %u is %u\n", key, s_RefCount[key]); // todo remove
+        EMB_ASSERT_HARD(s_HandleRefCount[key] <= PowerIntUnsigned((embU32)2, RESHDL_SLOT_INDEX_BITS), "attempting to increment ref count past max capacity! Consider increasing RESHDL_SLOT_INDEX_BITS");
+        s_HandleRefCount[key]++;
+        printf("copyconstructor/assign: ref count for key %u is %u\n", key, s_HandleRefCount[key]); // todo remove
     }
 
     ResourceHandle& operator=(const ResourceHandle& obj) // copy assignment
@@ -118,14 +118,7 @@ struct ResourceHandle
         return *this;
     }
 
-    ~ResourceHandle() // destructor
-    {
-        // decrement ref counter
-        embU32 key = (embU32)m_SlotIndex | ((embU32)m_TypeIndex << 16); // hardcode slot to u16
-        EMB_ASSERT_HARD(s_RefCount[key] > 0, "attempting to decrement ref count when count is already 0!");
-        s_RefCount[key]--;
-        printf("destructor: ref count for key %u is %u\n", key, s_RefCount[key]); // todo remove
-    }
+    ~ResourceHandle();
 
     void* GetData() const noexcept;
 
@@ -135,7 +128,7 @@ struct ResourceHandle
     EMB_IFDEF_VALIDATE_RESMGR(embU16 m_Parity : RESHDL_PARITY_BITS);
 
     // global map just to count handle references
-    static embMap<embU32, embU16> s_RefCount;
+    static embMap<embU32, embU16> s_HandleRefCount;
 
     friend class ResourceManager;
 };
@@ -323,40 +316,18 @@ class ResourceManager
         return (void*)1234; // temp testing, return something other than nullptr
     }
 
+    void UnloadResource(ResourceType resType, ResourceStore::ResourceSlotIndex slot)
+    {
+        // Remove entry from ResourceStore
+        m_ResourceStore.RemoveResourceDataEntry(resType, slot);
+
+        // TODO actually free the data.. via mem manager or delete or whatever.
+        printf("Unloading resource!\n");
+    }
+
   private:
     ResourceStore m_ResourceStore;
+    friend ResourceHandle; // so that it can unload resource...
 };
 
-
-
-// Type ID shit lookup
-// store an array of typeids derived from locally hashing type names
-// array should be populated in ORDER...
-// embResourceTypeID relies on this order. Corresponds to the index.
-// How to populate? and can it be done at compile time?
-// Can the lookup function be a consteval function?
-// Can the registration be macro'd and called from anywhere?
-// Can other systems like component types use this same lookup system?
-// this is basically RTTR lmao
-
 EMB_NAMESPACE_END
-
-// Current storage method:
-// Declare & define a bunch of ResourceStore<TYPE> -> PUT into an array IResourceStore[20]
-// To get data: handle.get() -> Look up IResourceStore[20] ->
-//              get ResourceStore<TYPE> -> get data array -> find elem in data array & RETURN.
-
-
-// Creating Handles/Loading resources
-// Start out blank state. ResourceStore arrays all set up but empty.
-// When a GameObject is deserialized, a ResourceId (to uniquely identify hehe.png) is provided
-//  > Same thing when adding a new ResourceId to an object too, ResourceId will be provided
-//  > ResourceId needs to contain the type too.
-// Throw ResourceId into ResourceManager and ask for a ResourceHandle.
-//  > Resourcemanager loads in the raw data, gets the pointer, and stores the raw pointer in ResourceStore.
-//  > If data alr loaded, just return a handle.
-// When all ResourceHandles disappear (ref counting == 0), remove that resource in ResourceStore.
-
-// On deserialize:
-// Need to be able to convert Handles back into ResourceId.
-// When storing the raw pointer in ResourceStore, add the ResourceId as well in the backing store.
