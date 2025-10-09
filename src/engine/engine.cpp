@@ -25,13 +25,18 @@ void Engine::Init()
     // Rest of Engine init logic here
     // Registering RESOURCE stuffs.
 
-    ResourceHandle test = ResourceManager::Instance().GetResourceHandle(Hash::GenerateHash("ResourceType::SCENE"), 1234);
+    ResourceHandle test = ResourceManager::Instance().GetResourceHandle(ResourceType::SCENE, 1234);
     {
         ResourceHandle test2 = test;
-        ResourceHandle test3 = ResourceManager::Instance().GetResourceHandle(Hash::GenerateHash("ResourceType::SCENE"), 1234);
+        ResourceHandle test3 = ResourceManager::Instance().GetResourceHandle(ResourceType::SCENE, 1234);
     }
 
     printf("pointer is %u\n", (embU64)test.GetData()); // prints 1234
+
+    const char* hehe = "new embStr";
+    ResourceManager::Instance().LoadResourceExternal(ResourceType::SHADER_FRAG, 12'345, (embGenericPtr)hehe);
+
+    ResourceHandle test4 = ResourceManager::Instance().GetResourceHandle(ResourceType::SHADER_FRAG, 12'345);
 
     // Post-init stuff
     EngineClock::Instance()

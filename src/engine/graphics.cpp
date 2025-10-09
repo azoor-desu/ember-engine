@@ -7,6 +7,7 @@
 #include "util/types.h"
 
 #include "graphics.h"
+#include "resourcemanager.h"
 #include "window.h"
 
 EMB_NAMESPACE_START

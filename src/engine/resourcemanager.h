@@ -200,9 +200,8 @@ class ResourceStore
                         "cannot set nullptr as resource!");
 
         // iF resource is already in store, error.
-        EMB_IFDEF_VALIDATE_RESMGR(EMB_ASSERT_HARD(
-            GetResourceDataSlotFromGuid(resType, resGuid) == RESMGR_INVALID_SLOT,
-            "attempted to set new resource while it is already in store"));
+        EMB_ASSERT_HARD(GetResourceDataSlotFromGuid(resType, resGuid) == RESMGR_INVALID_SLOT,
+                        "attempted to set new resource while it is already in store");
 
         // Find new slot and set.
         for (embU32 i = 0; i < RESMGR_RESOURCE_COUNT; i++)
@@ -304,30 +303,58 @@ class ResourceManager
         // - resource type hash
     }
 
-    ResourceHandle GetResourceHandle(embResourceTypeGuid typeGuid, embResourceGuid resGuid) noexcept;
+    ResourceHandle GetResourceHandle(ResourceType resType, embResourceGuid resGuid) noexcept;
+    ResourceHandle GetResourceHandle(embResourceTypeGuid resTypeGuid, embResourceGuid resGuid) noexcept;
 
-  private:
-    // Loads raw data according to different implementations.
-    // Resource lifetime is NOT managed by this function. Caller will manage.
-    void* LoadResource(embResourceTypeGuid typeGuid, embResourceGuid resGuid)
+    // Loads data from packed files straight into memory.
+    void LoadResource(ResourceType resType, embResourceGuid resGuid)
     {
         // TODO grabs the loaded metadata, load data into game memory from asset files
         printf("Loading resource!\n");
-        return (void*)1234; // temp testing, return something other than nullptr
+
+        // do some loading from external source
+        // TODO if resGuid not found, assert.
+        void* ret = (void*)1234; // temp testing, return something other than nullptr
+
+        // add resource to backing store. Note that ref count is still 0 at this point.
+        m_ResourceStore.AddNewResourceData(resType, resGuid, ret);
+    }
+    void LoadResource(embResourceTypeGuid resTypeGuid, embResourceGuid resGuid)
+    {
+        ResourceType resType = EMB_X_ENUM_FROM_HASH(ResourceType, resTypeGuid);
+        LoadResource(resType, resGuid);
     }
 
+    // Loads data from an external source (manual loading or something) into resource manager
+    void LoadResourceExternal(ResourceType resType, embResourceGuid resGuid, embGenericPtr dataPtr)
+    {
+        printf("Loading resource from externally using existing pointer!\n");
+
+        // add resource to backing store. Note that ref count is still 0 at this point.
+        m_ResourceStore.AddNewResourceData(resType, resGuid, dataPtr);
+    }
+    void LoadResourceExternal(embResourceTypeGuid resTypeGuid, embResourceGuid resGuid, embGenericPtr dataPtr)
+    {
+        ResourceType resType = EMB_X_ENUM_FROM_HASH(ResourceType, resTypeGuid);
+        LoadResourceExternal(resType, resGuid, dataPtr);
+    }
+
+    // Called when need to unload and free data from resourceManager
     void UnloadResource(ResourceType resType, ResourceStore::ResourceSlotIndex slot)
     {
         // Remove entry from ResourceStore
         m_ResourceStore.RemoveResourceDataEntry(resType, slot);
 
         // TODO actually free the data.. via mem manager or delete or whatever.
+        // Probably want to unload via unique ptr delete
         printf("Unloading resource!\n");
     }
 
   private:
     ResourceStore m_ResourceStore;
-    friend ResourceHandle; // so that it can unload resource...
 };
 
 EMB_NAMESPACE_END
+
+// TODO: Use unique ptrs to enforce ownership of data.
+// On LoadResource, data is initially owned by whatever loaders. When stored into ResourceManager, need to tsfr that ownership to here.
