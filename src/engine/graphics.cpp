@@ -10,6 +10,9 @@
 #include "resourcemanager.h"
 #include "window.h"
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "../../lib/stb/stb_image.h"
+
 EMB_NAMESPACE_START
 
 void Graphics::Init()
@@ -38,9 +41,17 @@ void Graphics::Init()
 
     const char* vertexShaderSource = "#version 330 core\n"
                                      "layout (location = 0) in vec3 aPos;\n"
+                                     "layout (location = 1) in vec3 aColor;\n"
+                                     "layout (location = 2) in vec2 aTexCoord;\n"
+
+                                     "out vec3 ourColor;\n"
+                                     "out vec2 TexCoord;\n"
+
                                      "void main()\n"
                                      "{\n"
-                                     "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+                                     "  gl_Position = vec4(aPos, 1.0);\n"
+                                     "  ourColor = aColor;\n"
+                                     "  TexCoord = aTexCoord;\n"
                                      "}\0";
 
     unsigned int vertexShader;
@@ -57,9 +68,16 @@ void Graphics::Init()
 
     const char* fragmentShaderSource = "#version 330 core\n"
                                        "out vec4 FragColor;\n"
+
+                                       "in vec3 ourColor;\n"
+                                       "in vec2 TexCoord;\n"
+
+                                       "uniform sampler2D ourTexture;\n"
+
                                        "void main()\n"
                                        "{\n"
-                                       "   FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+                                       //"   FragColor = texture(ourTexture, TexCoord);\n"
+                                       "    FragColor = texture(ourTexture, TexCoord) * vec4(ourColor, 1.0);\n"
                                        "}\0";
 
     unsigned int fragmentShader;
@@ -93,15 +111,40 @@ void Graphics::Init()
 
     // Load models
     float vertices[] = {
-        0.5f, 0.5f, 0.0f,  // top right
-        0.5f, -0.5f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f,  // bottom left
-        -0.5f, 0.5f, 0.0f   // top left
+        // positions          // colors           // texture coords
+        0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,   // top right
+        0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,   // bottom right
+        -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // bottom left
+        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f    // top left
     };
     unsigned int indices[] = {
         0, 1, 3,   // first triangle
         1, 2, 3    // second triangle
     };
+
+    // Load image
+    int width, height, nrChannels;
+    unsigned char* data = stbi_load("res/wall.jpg", &width, &height, &nrChannels, 0);
+    //ResourceManager::Instance().LoadResourceExternal(ResourceType::TEXTURE_ALBEDO, 4444, (embGenericPtr)data);
+    //ResourceHandle image = ResourceManager::Instance().GetResourceHandle(ResourceType::TEXTURE_ALBEDO, 4444);
+    // WARNING: TODO unload this guy
+
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+
+    // set the texture wrapping/filtering options (on the currently bound texture object)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    stbi_image_free(data);
+
+    // WIP: stopped at https://learnopengl.com/Getting-started/Textures "Texture Units"
+    // ... read further!
 
     // Create VAO to store all of the below configs
     // VAO stores: VBO/EBO BINDINGS, glVertexAttribPointer, glEnableVertexAttribArray.
@@ -118,24 +161,31 @@ void Graphics::Init()
     // GL_DYNAMIC_DRAW: the data is changed a lot and used many times.
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); // load data into focused buffer
 
-    // Create a EBO.
+    // Create an EBO.
     glGenBuffers(1, &EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); // bring buffer into focus. Also binds to VAO.
     // load data into buffer.
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     // Specify a layout of how to interpret a VBO (vertex attribute), and save it to slot 0 (attribute 0)
-    // e.g. [xyz][xyz][xyz]...
-    // Is associated with the current VBO in focus (binded).
-    // Corresponds to GLSL's vertex shader layout.
+    // attribute 0 appears as "layout (location = 0) in vec3 aPos;". Have one attribute for each type e.g. pos, color, tex
+    // e.g. [xyz][xyz][xyz]... Is associated with the current VBO in focus (binded).
     // Offset is used in the case that you want to interleave other data other than pos (color etc),
     // and have another attribute refer to those.
     // [pos][col][pos][col][pos][col]...
     // layout0: position. Offset 0, stride [pos][col]
     // layout1: color. Offset [pos], stride [pos][col]
     // https://learnopengl.com/img/getting-started/vertex_array_objects.png
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0); // enable the vertex attribute feature for layout 0
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(0); // enable the vertex attribute feature for layout 0 (enables layout (location = 0))
+
+    // do same for color @ layout 1
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1); // enable the vertex attribute feature for layout 0 (enables layout (location = 0))
+
+    // do same for tex @ layout 2
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2); // enable the vertex attribute feature for layout 0 (enables layout (location = 0))
 }
 
 void Graphics::Render()
@@ -147,6 +197,7 @@ void Graphics::Render()
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     glUseProgram(shaderProgram);
+    glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 

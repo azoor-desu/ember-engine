@@ -21,6 +21,7 @@ class Graphics
     unsigned int VAO;
     unsigned int EBO;
     unsigned int shaderProgram;
+    unsigned int texture;
 };
 
 EMB_NAMESPACE_END
