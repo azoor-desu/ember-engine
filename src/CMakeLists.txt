@@ -21,4 +21,3 @@ endif()
 
 add_subdirectory(engine)
 add_subdirectory(util)
-add_subdirectory(tools)

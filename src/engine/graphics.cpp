@@ -72,12 +72,13 @@ void Graphics::Init()
                                        "in vec3 ourColor;\n"
                                        "in vec2 TexCoord;\n"
 
-                                       "uniform sampler2D ourTexture;\n"
+                                       "uniform sampler2D texture1;\n"
+                                       "uniform sampler2D texture2;\n"
 
                                        "void main()\n"
                                        "{\n"
                                        //"   FragColor = texture(ourTexture, TexCoord);\n"
-                                       "    FragColor = texture(ourTexture, TexCoord) * vec4(ourColor, 1.0);\n"
+                                       "    FragColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.2);\n"
                                        "}\0";
 
     unsigned int fragmentShader;
@@ -127,24 +128,29 @@ void Graphics::Init()
     unsigned char* data = stbi_load("res/wall.jpg", &width, &height, &nrChannels, 0);
     //ResourceManager::Instance().LoadResourceExternal(ResourceType::TEXTURE_ALBEDO, 4444, (embGenericPtr)data);
     //ResourceHandle image = ResourceManager::Instance().GetResourceHandle(ResourceType::TEXTURE_ALBEDO, 4444);
-    // WARNING: TODO unload this guy
 
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-
+    glGenTextures(1, &texture); // create texture handle
+    glBindTexture(GL_TEXTURE_2D, texture); // bind it to bring texture into focus, takes all of the settings below.
     // set the texture wrapping/filtering options (on the currently bound texture object)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glGenerateMipmap(GL_TEXTURE_2D);
-
     stbi_image_free(data);
 
-    // WIP: stopped at https://learnopengl.com/Getting-started/Textures "Texture Units"
-    // ... read further!
+    // load another one
+    data = stbi_load("res/awesomeface.png", &width, &height, &nrChannels, 0);
+    glGenTextures(1, &texture2); // create texture handle
+    glBindTexture(GL_TEXTURE_2D, texture2); // bind it to bring texture into focus, takes all of the settings below.
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(data);
 
     // Create VAO to store all of the below configs
     // VAO stores: VBO/EBO BINDINGS, glVertexAttribPointer, glEnableVertexAttribArray.
@@ -186,6 +192,22 @@ void Graphics::Init()
     // do same for tex @ layout 2
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2); // enable the vertex attribute feature for layout 0 (enables layout (location = 0))
+
+    // Set up the texture unit bindings
+    // activate the texture unit first before binding texture
+    // by default, the active texture is always GL_TEXTURE0
+    // ranges from GL_TEXTURE0-15
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture); // binds texture to
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+
+    // Then specify the texture unit binding for GLSL unifor sampler.
+    // By default, GL_TEXTURE0 is used for binding the first texture... so if there's only 1 texture there's no need to explicitly bind
+    // Depends on driver though. Some drivers do not support that feature. Explicitly binding is better.
+    glUseProgram(shaderProgram); // for setting uniforms below
+    glUniform1i(glGetUniformLocation(shaderProgram, "texture1"), 0); // "uniform sampler2D texture1" binds to GL_TEXTURE0
+    glUniform1i(glGetUniformLocation(shaderProgram, "texture2"), 1); // "uniform sampler2D texture1" binds to GL_TEXTURE1
 }
 
 void Graphics::Render()
@@ -197,7 +219,6 @@ void Graphics::Render()
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     glUseProgram(shaderProgram);
-    glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(VAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
