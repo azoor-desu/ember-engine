@@ -41,7 +41,7 @@ endif()
 # ======================== BUILD TOGGLES ========================
 # Moved to cmake-variants.yaml and toggled via cmake UI
 #set(CMAKE_BUILD_TYPE Release)
-#set(PROJ_BUILD_TYPE Editor) # Editor || Engine
+#set(EMB_DEF_BUILD_APP_TYPE Editor) # Editor || Engine
 
 # ======================== START CREATE TARGETS ========================
 # STATIC - LIB. Requires header files to use.
@@ -51,13 +51,13 @@ add_library(UtilsLib STATIC)
 add_library(EngineLib STATIC)
 add_executable(MainExe)
 
-if (PROJ_BUILD_TYPE MATCHES Engine)
+if (EMB_DEF_BUILD_APP_TYPE MATCHES Engine)
     set(PROJ_OUTPUT_NAME "EmberEngine")
 else()
     set(PROJ_OUTPUT_NAME "EmberEditor")
 endif()
 
-if (PLATFORM_TYPE MATCHES Windows)
+if (EMB_DEF_PLATFORM MATCHES Windows)
     set(PROJ_OUTPUT_SUFFIX ".exe")
 else()
     set(PROJ_OUTPUT_SUFFIX ".out")
@@ -86,14 +86,14 @@ set_target_properties(
 
 # enable pch
 target_precompile_headers(EngineLib PRIVATE src/pch-engine.h) 
-if (PROJ_BUILD_TYPE MATCHES Editor)
+if (EMB_DEF_BUILD_APP_TYPE MATCHES Editor)
     target_precompile_headers(MainExe PRIVATE src/pch-editor.h)
 endif()
 
 # forward definitions to preprocessor
-if (PLATFORM_TYPE MATCHES Linux)
+if (EMB_DEF_PLATFORM MATCHES Linux)
     target_compile_definitions(EngineLib PRIVATE EMB_DEF_LINUX)
-elseif(PLATFORM_TYPE MATCHES Windows)
+elseif(EMB_DEF_PLATFORM MATCHES Windows)
     target_compile_definitions(MainExe PRIVATE EMB_DEF_WINDOWS)
 endif()
 
@@ -146,8 +146,9 @@ target_include_directories(
 )
 
 # add all direct subdirs here
-add_subdirectory(src)
 add_subdirectory(lib)
+add_subdirectory(src)
+
 #...
 # ======================== END TARGET SOURCES ========================
 

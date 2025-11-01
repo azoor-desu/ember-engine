@@ -24,7 +24,7 @@ Build the project and it should run.
 
 ### Linux specific libraries
 To build the project, these packages need to be installed (non-exhaustive):  
-- llvm20 (for Address Sanitizer)
+- libasan (for Address Sanitizer)
 - libglfw3
 - glew-devel
 - glm-devel

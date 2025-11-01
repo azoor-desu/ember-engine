@@ -4,7 +4,7 @@ target_sources(
         pch-engine.cpp
 )
 
-if (PROJ_BUILD_TYPE MATCHES Editor)
+if (EMB_DEF_BUILD_APP_TYPE MATCHES Editor)
     target_sources(
         MainExe
         PRIVATE 

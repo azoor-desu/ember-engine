@@ -5,12 +5,12 @@ platform:
       short: Linux
       long: Linux Platform
       settings:
-        PLATFORM_TYPE: Linux
+        EMB_DEF_PLATFORM: Linux
     windows:    
       short: Windows
       long: Windows Platform
       settings:
-        PLATFORM_TYPE: Windows
+        EMB_DEF_PLATFORM: Windows
 
 iseditor:
   default: engine
@@ -19,12 +19,12 @@ iseditor:
       short: Engine
       long: Standalone game application
       settings:
-        PROJ_BUILD_TYPE: Engine
+        EMB_DEF_BUILD_APP_TYPE: Engine
     editor:    
       short: Editor
       long: Game Editor built upon Engine library
       settings:
-        PROJ_BUILD_TYPE: Editor
+        EMB_DEF_BUILD_APP_TYPE: Editor
 
 buildType:
   default: debug
